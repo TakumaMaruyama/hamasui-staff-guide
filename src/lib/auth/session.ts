@@ -140,9 +140,31 @@ function firstHeaderValue(value: string): string | null {
   return value.split(",", 1)[0]?.trim() || null;
 }
 
-export function sameOrigin(request: Request): boolean {
-  const requestOrigin = normalizeOrigin(request.headers.get("origin"));
-  if (!requestOrigin) return false;
+export type SameOriginDiagnostic = {
+  allowed: boolean;
+  originState: "missing" | "invalid" | "valid";
+  requestUrlOriginAvailable: boolean;
+  requestUrlMatch: boolean;
+  hostHeaderPresent: boolean;
+  forwardedHostHeaderPresent: boolean;
+  forwardedProtocolHeaderPresent: boolean;
+  proxyOriginAvailable: boolean;
+  proxyMatch: boolean;
+  replitDomainsConfigured: boolean;
+  replitDomainCount: number;
+  replitDomainValidCount: number;
+  replitDomainMatch: boolean;
+  replitDevDomainConfigured: boolean;
+  replitDevDomainValid: boolean;
+  replitDevDomainMatch: boolean;
+};
+
+export function diagnoseSameOrigin(request: Request): SameOriginDiagnostic {
+  const originHeader = request.headers.get("origin");
+  const requestOrigin = normalizeOrigin(originHeader);
+  const originState = originHeader?.trim()
+    ? requestOrigin ? "valid" : "invalid"
+    : "missing";
 
   const requestUrl = new URL(request.url);
   const allowedOrigins = new Set<string>();
@@ -160,12 +182,43 @@ export function sameOrigin(request: Request): boolean {
   const proxyOrigin = originFromHost(host, protocol);
   if (proxyOrigin) allowedOrigins.add(proxyOrigin);
 
-  for (const domain of process.env.REPLIT_DOMAINS?.split(",") ?? []) {
-    const replitOrigin = replitOriginFromDomain(domain);
-    if (replitOrigin) allowedOrigins.add(replitOrigin);
+  const replitDomainsValue = process.env.REPLIT_DOMAINS;
+  const replitDomains = replitDomainsValue?.split(",") ?? [];
+  const replitOrigins = replitDomains
+    .map((domain) => replitOriginFromDomain(domain))
+    .filter((origin): origin is string => origin !== null);
+  for (const replitOrigin of replitOrigins) {
+    allowedOrigins.add(replitOrigin);
   }
-  const developmentOrigin = replitOriginFromDomain(process.env.REPLIT_DEV_DOMAIN);
+  const replitDevDomainValue = process.env.REPLIT_DEV_DOMAIN;
+  const developmentOrigin = replitOriginFromDomain(replitDevDomainValue);
   if (developmentOrigin) allowedOrigins.add(developmentOrigin);
 
-  return allowedOrigins.has(requestOrigin);
+  const requestUrlMatch = Boolean(requestOrigin && urlOrigin === requestOrigin);
+  const proxyMatch = Boolean(requestOrigin && proxyOrigin === requestOrigin);
+  const replitDomainMatch = Boolean(requestOrigin && replitOrigins.includes(requestOrigin));
+  const replitDevDomainMatch = Boolean(requestOrigin && developmentOrigin === requestOrigin);
+
+  return {
+    allowed: Boolean(requestOrigin && allowedOrigins.has(requestOrigin)),
+    originState,
+    requestUrlOriginAvailable: urlOrigin !== null,
+    requestUrlMatch,
+    hostHeaderPresent: request.headers.has("host"),
+    forwardedHostHeaderPresent: forwardedHostHeader !== null,
+    forwardedProtocolHeaderPresent: forwardedProtocolHeader !== null,
+    proxyOriginAvailable: proxyOrigin !== null,
+    proxyMatch,
+    replitDomainsConfigured: Boolean(replitDomainsValue?.trim()),
+    replitDomainCount: replitDomains.length,
+    replitDomainValidCount: replitOrigins.length,
+    replitDomainMatch,
+    replitDevDomainConfigured: Boolean(replitDevDomainValue?.trim()),
+    replitDevDomainValid: developmentOrigin !== null,
+    replitDevDomainMatch,
+  };
+}
+
+export function sameOrigin(request: Request): boolean {
+  return diagnoseSameOrigin(request).allowed;
 }

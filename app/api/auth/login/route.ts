@@ -1,11 +1,17 @@
 import { NextResponse } from "next/server";
 import { clearLoginAttempts, isRateLimited, LOGIN_RETRY_AFTER_SECONDS, loginRateLimitKey, recordLoginAttempt } from "@/src/lib/auth/rate-limit";
-import { createSessionToken, safeReturnTo, sameOrigin, SESSION_COOKIE_NAME, SESSION_MAX_AGE, verifyStaffPassword } from "@/src/lib/auth/session";
+import { createSessionToken, diagnoseSameOrigin, safeReturnTo, SESSION_COOKIE_NAME, SESSION_MAX_AGE, verifyStaffPassword } from "@/src/lib/auth/session";
 
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
-  if (!sameOrigin(request)) return NextResponse.json({ error: "不正なリクエストです。" }, { status: 403 });
+  const originCheck = diagnoseSameOrigin(request);
+  if (!originCheck.allowed) {
+    return NextResponse.json(
+      { error: "不正なリクエストです。", originDiagnostic: originCheck },
+      { status: 403, headers: { "Content-Type": "application/json; charset=utf-8" } },
+    );
+  }
   const publicOrigin = request.headers.get("origin")!;
   const key = loginRateLimitKey(request);
   let form: FormData;
