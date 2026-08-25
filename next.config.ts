@@ -19,10 +19,6 @@ const nextConfig: NextConfig = {
         ],
       },
       {
-        source: "/login",
-        headers: [{ key: "Cache-Control", value: "private, no-store" }],
-      },
-      {
         source: "/api/:path*",
         headers: [{ key: "Cache-Control", value: "private, no-store" }],
       },

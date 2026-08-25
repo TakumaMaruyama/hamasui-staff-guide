@@ -19,9 +19,6 @@ export function SiteHeader() {
           <Link href="/">ホーム</Link>
           <Link href="/search">検索</Link>
           <Link href="/manuals">すべてのマニュアル</Link>
-          <form action="/api/auth/logout" method="post">
-            <button type="submit">ログアウト</button>
-          </form>
         </nav>
       </div>
     </header>

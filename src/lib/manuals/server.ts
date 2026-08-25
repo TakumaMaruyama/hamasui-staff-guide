@@ -1,6 +1,5 @@
 import "server-only";
 
-import { requireAuth } from "@/src/lib/auth";
 import {
   getManualRepository,
   type CachedManualSnapshot,
@@ -21,7 +20,6 @@ function logManualLoadError(error: unknown): void {
 }
 
 export async function loadManualSnapshot(force = false): Promise<ManualLoadResult> {
-  await requireAuth();
   try {
     return { ok: true, data: await getManualRepository().getSnapshot(force) };
   } catch (error) {

@@ -1,18 +1,10 @@
 import { NextResponse } from "next/server";
-import {
-  requireRequestAuth,
-  sameOrigin,
-} from "@/src/lib/auth/session";
 import { getManualRepository } from "@/src/lib/notion";
+import { sameOrigin } from "@/src/lib/security/origin";
 
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
-  try {
-    await requireRequestAuth(request);
-  } catch {
-    return NextResponse.json({ error: "認証が必要です。" }, { status: 401 });
-  }
   if (!sameOrigin(request)) {
     return NextResponse.json({ error: "不正なリクエストです。" }, { status: 403 });
   }
