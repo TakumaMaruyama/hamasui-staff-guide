@@ -96,19 +96,48 @@ export function safeReturnTo(value: string | null | undefined, origin: string): 
   }
 }
 
+function originFromHost(host: string | null | undefined, protocol: string): string | null {
+  const normalizedHost = host?.trim();
+  if (
+    !normalizedHost
+    || !["http", "https"].includes(protocol)
+    || /[/\\@?#\s]/.test(normalizedHost)
+  ) return null;
+  try {
+    const url = new URL(`${protocol}://${normalizedHost}`);
+    return url.host === normalizedHost ? url.origin : null;
+  } catch {
+    return null;
+  }
+}
+
 export function sameOrigin(request: Request): boolean {
   const origin = request.headers.get("origin");
   if (!origin) return false;
-  const requestUrl = new URL(request.url);
-  if (origin === requestUrl.origin) return true;
-  const forwardedHost = request.headers.get("x-forwarded-host")?.split(",")[0]?.trim();
-  const host = forwardedHost || request.headers.get("host")?.trim();
-  const forwardedProtocol = request.headers.get("x-forwarded-proto")?.split(",")[0]?.trim();
-  const protocol = forwardedProtocol || requestUrl.protocol.replace(":", "");
-  if (!host || !["http", "https"].includes(protocol)) return false;
+  let requestOrigin: string;
   try {
-    return new URL(origin).origin === `${protocol}://${host}`;
+    const parsedOrigin = new URL(origin);
+    if (parsedOrigin.origin !== origin) return false;
+    requestOrigin = parsedOrigin.origin;
   } catch {
     return false;
   }
+
+  const requestUrl = new URL(request.url);
+  const allowedOrigins = new Set([requestUrl.origin]);
+  const forwardedHost = request.headers.get("x-forwarded-host")?.split(",")[0]?.trim();
+  const host = forwardedHost || request.headers.get("host")?.trim();
+  const forwardedProtocol = request.headers.get("x-forwarded-proto")?.split(",")[0]?.trim().toLowerCase();
+  const protocol = forwardedProtocol || requestUrl.protocol.replace(":", "");
+  const proxyOrigin = originFromHost(host, protocol);
+  if (proxyOrigin) allowedOrigins.add(proxyOrigin);
+
+  for (const domain of process.env.REPLIT_DOMAINS?.split(",") ?? []) {
+    const replitOrigin = originFromHost(domain, "https");
+    if (replitOrigin) allowedOrigins.add(replitOrigin);
+  }
+  const developmentOrigin = originFromHost(process.env.REPLIT_DEV_DOMAIN, "https");
+  if (developmentOrigin) allowedOrigins.add(developmentOrigin);
+
+  return allowedOrigins.has(requestOrigin);
 }

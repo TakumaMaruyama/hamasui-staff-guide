@@ -4,12 +4,18 @@ import { createSessionToken, safeReturnTo, sameOrigin, verifySessionToken } from
 
 const originalSecret = process.env.SESSION_SECRET;
 const originalPassword = process.env.STAFF_SITE_PASSWORD;
+const originalReplitDomains = process.env.REPLIT_DOMAINS;
+const originalReplitDevDomain = process.env.REPLIT_DEV_DOMAIN;
 
 afterEach(() => {
   if (originalSecret === undefined) delete process.env.SESSION_SECRET;
   else process.env.SESSION_SECRET = originalSecret;
   if (originalPassword === undefined) delete process.env.STAFF_SITE_PASSWORD;
   else process.env.STAFF_SITE_PASSWORD = originalPassword;
+  if (originalReplitDomains === undefined) delete process.env.REPLIT_DOMAINS;
+  else process.env.REPLIT_DOMAINS = originalReplitDomains;
+  if (originalReplitDevDomain === undefined) delete process.env.REPLIT_DEV_DOMAIN;
+  else process.env.REPLIT_DEV_DOMAIN = originalReplitDevDomain;
 });
 
 describe("staff session cookie token", () => {
@@ -60,6 +66,31 @@ describe("staff session cookie token", () => {
     });
     expect(sameOrigin(request)).toBe(true);
     expect(sameOrigin(new Request(request.url, { method: "POST", headers: { origin: "https://evil.example" } }))).toBe(false);
+  });
+
+  it("内部listen先でもREPLIT_DOMAINSの公開originを許可する", () => {
+    process.env.REPLIT_DOMAINS = "staff-guide.replit.app";
+    const request = new Request("http://0.0.0.0:3000/api/auth/login", {
+      method: "POST",
+      headers: { origin: "https://staff-guide.replit.app" },
+    });
+    expect(sameOrigin(request)).toBe(true);
+  });
+
+  it("複数のREPLIT_DOMAINSとREPLIT_DEV_DOMAINを許可する", () => {
+    process.env.REPLIT_DOMAINS = "first.replit.app, second.replit.app";
+    process.env.REPLIT_DEV_DOMAIN = "staff-guide.replit.dev";
+    const requestUrl = "http://0.0.0.0:3000/api/auth/login";
+    expect(sameOrigin(new Request(requestUrl, { headers: { origin: "https://first.replit.app" } }))).toBe(true);
+    expect(sameOrigin(new Request(requestUrl, { headers: { origin: "https://second.replit.app" } }))).toBe(true);
+    expect(sameOrigin(new Request(requestUrl, { headers: { origin: "https://staff-guide.replit.dev" } }))).toBe(true);
+  });
+
+  it("Replitの許可リストにない外部originとOriginなしを拒否する", () => {
+    process.env.REPLIT_DOMAINS = "staff-guide.replit.app";
+    const requestUrl = "http://0.0.0.0:3000/api/auth/login";
+    expect(sameOrigin(new Request(requestUrl, { headers: { origin: "https://evil.example" } }))).toBe(false);
+    expect(sameOrigin(new Request(requestUrl))).toBe(false);
   });
 
   it("内部のlisten先ではなく利用者がアクセスしたoriginへ遷移する", async () => {
