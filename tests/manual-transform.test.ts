@@ -59,6 +59,7 @@ describe("Notion block transformation coverage", () => {
       table_row: { cells: [rich("列A"), rich("列B")] },
       column_list: {},
       column: {},
+      link_to_page: { type: "page_id", page_id: "linked-page" },
       child_page: { title: "子ページ" },
       child_database: { title: "一覧" },
       synced_block: {},

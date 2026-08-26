@@ -84,6 +84,56 @@ describe("Notion manual repository", () => {
     expect(listBlockChildren.mock.calls.map(([id]) => id)).not.toContain("database");
   });
 
+  it("resolves page shortcuts while keeping unavailable and non-page targets safe", async () => {
+    const page = (id: string, title: string) => ({
+      object: "page",
+      id,
+      properties: { Name: { type: "title", title: rich(title) } },
+    });
+    const retrievePage = vi.fn(async (id: string) => {
+      if (id === "missing") throw new Error("not shared");
+      return page(id, id === "root" ? "スタッフガイド" : "上級コース");
+    });
+    const listBlockChildren = vi.fn(async (id: string) => ({
+      results: id === "root"
+        ? [
+          { id: "shortcut", type: "link_to_page", link_to_page: { type: "page_id", page_id: "advanced" }, has_children: false },
+          { id: "missing-shortcut", type: "link_to_page", link_to_page: { type: "page_id", page_id: "missing" }, has_children: false },
+          { id: "database-shortcut", type: "link_to_page", link_to_page: { type: "database_id", database_id: "database" }, has_children: false },
+        ]
+        : [{ id: "advanced-body", type: "paragraph", paragraph: { rich_text: rich("上級者向けの内容") }, has_children: false }],
+      hasMore: false,
+    }));
+    const gateway: NotionGateway = {
+      retrievePage,
+      listBlockChildren,
+      retrieveDatabase: async () => ({}),
+      queryDataSource: async () => ({ results: [], hasMore: false }),
+    };
+
+    const result = await new NotionManualRepository({ gateway, rootPageId: "root" }).getSnapshot();
+
+    expect(result.snapshot.pages.map((manual) => manual.title)).toEqual(["スタッフガイド", "上級コース"]);
+    expect(result.snapshot.pages[0].blocks[0]).toMatchObject({
+      type: "link_to_page",
+      targetType: "page_id",
+      targetId: "advanced",
+      title: "上級コース",
+      slug: "上級コース",
+    });
+    expect(result.snapshot.pages[0].blocks[1]).toMatchObject({
+      type: "link_to_page",
+      targetId: "missing",
+    });
+    expect(result.snapshot.pages[0].blocks[1]).not.toHaveProperty("slug");
+    expect(result.snapshot.pages[1]).toMatchObject({
+      title: "上級コース",
+      plainText: "上級者向けの内容",
+      breadcrumbs: [],
+    });
+    expect(retrievePage).not.toHaveBeenCalledWith("database");
+  });
+
   it("converts rich text and unsupported blocks safely", () => {
     vi.spyOn(console, "warn").mockImplementation(() => undefined);
     expect(richTextFromNotion(rich("太字"))[0]).toMatchObject({ text: "太字", style: { bold: true, color: "blue" } });

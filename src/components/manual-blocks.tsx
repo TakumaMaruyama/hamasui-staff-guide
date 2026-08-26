@@ -212,6 +212,17 @@ function SingleBlock({ block, pageTitle }: { block: ManualBlock; pageTitle: stri
           <span aria-hidden="true">→</span>
         </Link>
       );
+    case "link_to_page":
+      return block.title && block.slug ? (
+        <Link className="child-page-link" href={`/manual/${encodeURIComponent(block.slug)}`}>
+          <span><strong>{block.title}</strong><small>関連するマニュアル</small></span>
+          <span aria-hidden="true">→</span>
+        </Link>
+      ) : (
+        <div className="manual-unsupported" role="note">
+          このリンク先はアプリ内で表示できません。Notionで確認してください。
+        </div>
+      );
     case "child_database":
       return (
         <div className="manual-unsupported">

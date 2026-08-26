@@ -1,4 +1,4 @@
-import type { ManualBlock, ManualBreadcrumb, ManualPage, ManualSnapshot } from "@/src/types/manual";
+import type { ManualBlock, ManualBreadcrumb, ManualLinkToPageBlock, ManualPage, ManualSnapshot } from "@/src/types/manual";
 import { ManualSnapshotCache, type CachedManualSnapshot } from "./cache";
 import { type NotionGateway, NotionSdkGateway, type NotionRecord } from "./gateway";
 import { blockFromNotion, blockTitle, createSlug, pageFromBlocks, richTextFromNotion, richTextToPlainText } from "./transform";
@@ -39,6 +39,7 @@ export class NotionManualRepository {
     const blockIds = new Set<string>();
     const slugs = new Set<string>();
     const databaseRowRequests = new Map<string, Promise<NotionRecord[]>>();
+    const pageLinks: ManualLinkToPageBlock[] = [];
 
     const uniqueSlug = (title: string, id: string) => {
       const base = createSlug(title, id);
@@ -194,6 +195,11 @@ export class NotionManualRepository {
           continue;
         }
 
+        if (block.type === "link_to_page") {
+          if (block.targetType === "page_id") pageLinks.push(block);
+          continue;
+        }
+
         await attachLinkedPages(block.children, parent, depth + 1);
       }
     };
@@ -221,6 +227,23 @@ export class NotionManualRepository {
 
     const root = await fetchPage(this.rootPageId, "スタッフマニュアル");
     if (!root) throw new Error("Unable to build the Notion root page");
+
+    for (let index = 0; index < pageLinks.length; index += 1) {
+      const block = pageLinks[index];
+      let target = pagesById.get(block.targetId);
+      if (!target) {
+        try {
+          target = await fetchPage(block.targetId, "リンク先のマニュアル");
+        } catch {
+          // An unavailable shortcut must not hide the rest of the manual.
+          continue;
+        }
+      }
+      if (!target) continue;
+      block.title = target.title;
+      block.slug = target.slug;
+    }
+
     return { rootPageId: this.rootPageId, pages, syncedAt: this.now().toISOString() };
   }
 }

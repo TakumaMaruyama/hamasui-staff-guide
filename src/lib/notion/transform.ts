@@ -143,6 +143,25 @@ export function blockFromNotion(
       return { ...base, type, title: text(content.title) || "無題のページ", pageId: id, slug: childPageSlug || createSlug(text(content.title), id) };
     case "child_database":
       return { ...base, type, title: text(content.title) || "データベース", isLoaded: false };
+    case "link_to_page": {
+      const targetType = text(content.type);
+      if (targetType === "page_id") {
+        const targetId = text(content.page_id);
+        if (targetId) return { ...base, type, targetType, targetId };
+      }
+      if (targetType === "database_id") {
+        const targetId = text(content.database_id);
+        if (targetId) return { ...base, type, targetType, targetId };
+      }
+      if (targetType === "comment_id") {
+        const targetId = text(content.comment_id);
+        if (targetId) return { ...base, type, targetType, targetId };
+      }
+      if (process.env.NODE_ENV !== "production") {
+        console.warn("Unsupported Notion link_to_page target");
+      }
+      return { ...base, type: "unsupported", originalType: type };
+    }
     default:
       if (process.env.NODE_ENV !== "production") {
         console.warn(`Unsupported Notion block type: ${type || "unknown"}`);

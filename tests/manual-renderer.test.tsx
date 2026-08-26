@@ -2,6 +2,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { ManualBlocks } from "../src/components/manual-blocks";
 import { blockFromNotion } from "../src/lib/notion/transform";
+import type { ManualBlock } from "../src/types/manual";
 
 const rich = (text: string) => [{
   plain_text: text,
@@ -49,5 +50,38 @@ describe("manual block renderer", () => {
     expect(html).toContain("/manual/%E9%96%8B%E9%A4%A8%E4%BD%9C%E6%A5%AD");
     expect(html).toContain("開館作業");
     expect(html).not.toContain("この一覧はNotionで確認してください");
+  });
+
+  it("renders a resolved page shortcut as an encoded manual link", () => {
+    const shortcut: ManualBlock = {
+      id: "shortcut",
+      children: [],
+      type: "link_to_page",
+      targetType: "page_id",
+      targetId: "advanced",
+      title: "上級コース",
+      slug: "上級コース",
+    };
+
+    const html = renderToStaticMarkup(<ManualBlocks blocks={[shortcut]} pageTitle="スタッフガイド" />);
+
+    expect(html).toContain('/manual/%E4%B8%8A%E7%B4%9A%E3%82%B3%E3%83%BC%E3%82%B9');
+    expect(html).toContain("上級コース");
+    expect(html).not.toContain("この形式の内容はアプリ内で表示できません");
+  });
+
+  it("keeps an unresolved shortcut visible without creating a broken link", () => {
+    const shortcut: ManualBlock = {
+      id: "missing-shortcut",
+      children: [],
+      type: "link_to_page",
+      targetType: "page_id",
+      targetId: "missing",
+    };
+
+    const html = renderToStaticMarkup(<ManualBlocks blocks={[shortcut]} pageTitle="スタッフガイド" />);
+
+    expect(html).toContain("このリンク先はアプリ内で表示できません");
+    expect(html).not.toContain("href=");
   });
 });

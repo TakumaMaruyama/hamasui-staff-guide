@@ -117,6 +117,14 @@ export type ManualChildDatabaseBlock = ManualBlockBase & {
   isLoaded: boolean;
 };
 
+export type ManualLinkToPageBlock = ManualBlockBase & {
+  type: "link_to_page";
+  targetType: "page_id" | "database_id" | "comment_id";
+  targetId: string;
+  title?: string;
+  slug?: string;
+};
+
 export type ManualUnsupportedBlock = ManualBlockBase & {
   type: "unsupported";
   originalType: string;
@@ -136,6 +144,7 @@ export type ManualBlock =
   | ManualContainerBlock
   | ManualChildPageBlock
   | ManualChildDatabaseBlock
+  | ManualLinkToPageBlock
   | ManualUnsupportedBlock;
 
 export type ManualHeading = {
