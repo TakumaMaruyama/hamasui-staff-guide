@@ -13,6 +13,8 @@ export type NotionChildrenPage = {
 export interface NotionGateway {
   retrievePage(pageId: string): Promise<NotionRecord>;
   listBlockChildren(pageId: string, cursor?: string): Promise<NotionChildrenPage>;
+  retrieveDatabase(databaseId: string): Promise<NotionRecord>;
+  queryDataSource(dataSourceId: string, cursor?: string): Promise<NotionChildrenPage>;
 }
 
 export type NotionGatewayOptions = {
@@ -45,6 +47,27 @@ export class NotionSdkGateway implements NotionGateway {
       block_id: pageId,
       start_cursor: cursor,
       page_size: 100,
+    }));
+
+    return {
+      results: response.results as unknown as NotionRecord[],
+      hasMore: response.has_more,
+      nextCursor: response.next_cursor ?? undefined,
+    };
+  }
+
+  async retrieveDatabase(databaseId: string): Promise<NotionRecord> {
+    return withNotionRetry(async () => (
+      await this.client.databases.retrieve({ database_id: databaseId })
+    ) as unknown as NotionRecord);
+  }
+
+  async queryDataSource(dataSourceId: string, cursor?: string): Promise<NotionChildrenPage> {
+    const response = await withNotionRetry(() => this.client.dataSources.query({
+      data_source_id: dataSourceId,
+      start_cursor: cursor,
+      page_size: 100,
+      result_type: "page",
     }));
 
     return {

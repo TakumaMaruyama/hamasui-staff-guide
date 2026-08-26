@@ -30,4 +30,24 @@ describe("manual block renderer", () => {
     expect(html).toContain("入水前に人数を確認");
     expect(html).toContain("この形式の内容はアプリ内で表示できません");
   });
+
+  it("renders child database rows as manual links", () => {
+    const childPage = blockFromNotion(
+      { id: "child", type: "child_page", child_page: { title: "開館作業" } },
+      [],
+      "開館作業",
+    );
+    const database = blockFromNotion(
+      { id: "database", type: "child_database", child_database: { title: "A業務マニュアルDB" } },
+      [childPage],
+    );
+    if (database.type === "child_database") database.isLoaded = true;
+
+    const html = renderToStaticMarkup(<ManualBlocks blocks={[database]} pageTitle="スタッフガイド" />);
+
+    expect(html).toContain("A業務マニュアルDB");
+    expect(html).toContain("/manual/%E9%96%8B%E9%A4%A8%E4%BD%9C%E6%A5%AD");
+    expect(html).toContain("開館作業");
+    expect(html).not.toContain("この一覧はNotionで確認してください");
+  });
 });

@@ -142,7 +142,7 @@ export function blockFromNotion(
     case "child_page":
       return { ...base, type, title: text(content.title) || "無題のページ", pageId: id, slug: childPageSlug || createSlug(text(content.title), id) };
     case "child_database":
-      return { ...base, type, title: text(content.title) || "データベース" };
+      return { ...base, type, title: text(content.title) || "データベース", isLoaded: false };
     default:
       if (process.env.NODE_ENV !== "production") {
         console.warn(`Unsupported Notion block type: ${type || "unknown"}`);

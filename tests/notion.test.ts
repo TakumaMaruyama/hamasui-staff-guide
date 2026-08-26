@@ -23,12 +23,65 @@ describe("Notion manual repository", () => {
     const gateway: NotionGateway = {
       retrievePage: async (id) => page(id === "root" ? "スタッフガイド" : "安全 管理"),
       listBlockChildren: async (id, cursor) => children[id](cursor),
+      retrieveDatabase: async () => ({}),
+      queryDataSource: async () => ({ results: [], hasMore: false }),
     };
     const result = await new NotionManualRepository({ gateway, rootPageId: "root" }).getSnapshot();
     expect(result.snapshot.pages).toHaveLength(2);
     expect(result.snapshot.pages[0].blocks[0].children[0].type).toBe("paragraph");
     expect(result.snapshot.pages[1]).toMatchObject({ parentId: "root", breadcrumbs: [{ title: "スタッフガイド" }] });
     expect(result.snapshot.pages[0].blocks[1]).toMatchObject({ type: "child_page", slug: result.snapshot.pages[1].slug });
+  });
+
+  it("fetches paginated child database rows as navigable manual pages", async () => {
+    const page = (id: string, title: string) => ({
+      object: "page",
+      id,
+      properties: { Name: { type: "title", title: rich(title) } },
+      last_edited_time: "2026-08-26T00:00:00.000Z",
+    });
+    const listBlockChildren = vi.fn(async (id: string) => ({
+      results: id === "root"
+        ? [{ id: "database", type: "child_database", child_database: { title: "A業務マニュアルDB" }, has_children: true }]
+        : [{ id: id + "-body", type: "paragraph", paragraph: { rich_text: rich(id + "の本文") }, has_children: false }],
+      hasMore: false,
+    }));
+    const queryDataSource = vi.fn(async (_id: string, cursor?: string) => cursor
+      ? { results: [page("second", "安全確認")], hasMore: false }
+      : { results: [page("first", "開館作業")], hasMore: true, nextCursor: "next" });
+    const gateway = {
+      retrievePage: async (id: string) => page(id, id === "root" ? "スタッフガイド" : id),
+      listBlockChildren,
+      retrieveDatabase: async () => ({
+        object: "database",
+        id: "database",
+        data_sources: [{ id: "source", name: "A業務マニュアルDB" }],
+      }),
+      queryDataSource,
+    };
+
+    const result = await new NotionManualRepository({ gateway, rootPageId: "root" }).getSnapshot();
+    const databaseBlock = result.snapshot.pages[0].blocks[0];
+
+    expect(result.snapshot.pages.map((manual) => manual.title)).toEqual([
+      "スタッフガイド",
+      "開館作業",
+      "安全確認",
+    ]);
+    expect(result.snapshot.pages.slice(1)).toEqual(expect.arrayContaining([
+      expect.objectContaining({ parentId: "root", breadcrumbs: [{ title: "スタッフガイド", slug: "スタッフガイド", id: "root" }] }),
+    ]));
+    expect(databaseBlock).toMatchObject({
+      type: "child_database",
+      isLoaded: true,
+      children: [
+        { type: "child_page", title: "開館作業", slug: "開館作業" },
+        { type: "child_page", title: "安全確認", slug: "安全確認" },
+      ],
+    });
+    expect(queryDataSource).toHaveBeenNthCalledWith(1, "source", undefined);
+    expect(queryDataSource).toHaveBeenNthCalledWith(2, "source", "next");
+    expect(listBlockChildren.mock.calls.map(([id]) => id)).not.toContain("database");
   });
 
   it("converts rich text and unsupported blocks safely", () => {

@@ -114,6 +114,7 @@ export type ManualChildPageBlock = ManualBlockBase & {
 export type ManualChildDatabaseBlock = ManualBlockBase & {
   type: "child_database";
   title: string;
+  isLoaded: boolean;
 };
 
 export type ManualUnsupportedBlock = ManualBlockBase & {

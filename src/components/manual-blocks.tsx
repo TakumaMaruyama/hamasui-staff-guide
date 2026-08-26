@@ -216,7 +216,15 @@ function SingleBlock({ block, pageTitle }: { block: ManualBlock; pageTitle: stri
       return (
         <div className="manual-unsupported">
           <strong>{block.title}</strong>
-          <p>この一覧はNotionで確認してください。</p>
+          {block.children.length > 0 ? (
+            <BlockChildren block={block} pageTitle={pageTitle} />
+          ) : (
+            <p>
+              {block.isLoaded
+                ? "登録されたマニュアルはありません。"
+                : "この一覧はNotionで確認してください。"}
+            </p>
+          )}
         </div>
       );
     case "unsupported":
