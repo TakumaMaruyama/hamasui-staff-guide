@@ -115,7 +115,13 @@ export function recentPages(snapshot: ManualSnapshot, limit = 5): ManualPage[] {
 }
 
 export function pageBySlug(snapshot: ManualSnapshot, slug: string): ManualPage | undefined {
-  return snapshot.pages.find((page) => page.slug === slug);
+  let decodedSlug = slug;
+  try {
+    decodedSlug = decodeURIComponent(slug);
+  } catch {
+    // Invalid path encoding cannot match a generated manual slug.
+  }
+  return snapshot.pages.find((page) => page.slug === decodedSlug);
 }
 
 export function pageNavigation(
