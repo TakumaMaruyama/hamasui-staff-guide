@@ -14,28 +14,34 @@ export function ImageLightbox({ src, alt, caption }: ImageLightboxProps) {
   const closeRef = useRef<HTMLButtonElement>(null);
   const [zoom, setZoom] = useState(1);
   const [failed, setFailed] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const captionId = useId();
 
   useEffect(() => {
+    if (!isOpen) return;
     const dialog = dialogRef.current;
     if (!dialog) return;
 
+    if (!dialog.open) dialog.showModal();
+    document.body.classList.add("modal-open");
+
     const handleClose = () => {
       setZoom(1);
+      setIsOpen(false);
       document.body.classList.remove("modal-open");
       triggerRef.current?.focus();
     };
 
     dialog.addEventListener("close", handleClose);
-    return () => dialog.removeEventListener("close", handleClose);
-  }, []);
+    window.requestAnimationFrame(() => closeRef.current?.focus());
+    return () => {
+      dialog.removeEventListener("close", handleClose);
+      document.body.classList.remove("modal-open");
+    };
+  }, [isOpen]);
 
   function open() {
-    const dialog = dialogRef.current;
-    if (!dialog) return;
-    dialog.showModal();
-    document.body.classList.add("modal-open");
-    window.requestAnimationFrame(() => closeRef.current?.focus());
+    setIsOpen(true);
   }
 
   function close() {
@@ -71,7 +77,7 @@ export function ImageLightbox({ src, alt, caption }: ImageLightboxProps) {
       </button>
       {caption ? <figcaption id={captionId}>{caption}</figcaption> : null}
 
-      <dialog
+      {isOpen ? <dialog
         ref={dialogRef}
         className="image-dialog"
         aria-label={`${alt}の拡大表示`}
@@ -106,7 +112,7 @@ export function ImageLightbox({ src, alt, caption }: ImageLightboxProps) {
           <img src={src} alt={alt} style={{ transform: `scale(${zoom})` }} />
         </div>
         {caption ? <p>{caption}</p> : null}
-      </dialog>
+      </dialog> : null}
     </figure>
   );
 }

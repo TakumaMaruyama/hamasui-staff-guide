@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { pageBySlug } from "../src/lib/manuals/presentation";
+import { categoriesFromSnapshot, pageBySlug } from "../src/lib/manuals/presentation";
 import type { ManualSnapshot } from "../src/types/manual";
 
 const manual = {
@@ -26,5 +26,18 @@ describe("manual page lookup", () => {
 
   it("不正なURLエンコード値を例外にせず拒否する", () => {
     expect(pageBySlug(snapshot, "%E0%A4%A")).toBeUndefined();
+  });
+
+  it("子孫ページ数を階層全体で数える", () => {
+    const pages = [
+      manual,
+      { ...manual, id: "category", title: "カテゴリ", slug: "category", parentId: "root" },
+      { ...manual, id: "child", title: "子ページ", slug: "child", parentId: "category" },
+      { ...manual, id: "grandchild", title: "孫ページ", slug: "grandchild", parentId: "child" },
+    ];
+    const categories = categoriesFromSnapshot({ ...snapshot, pages });
+    expect(categories).toEqual([
+      expect.objectContaining({ id: "category", pageCount: 3 }),
+    ]);
   });
 });

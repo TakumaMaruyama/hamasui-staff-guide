@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { ManualUnavailable, StaleWarning } from "@/src/components/manual-state";
 import { SearchForm } from "@/src/components/search-form";
 import { formatDate } from "@/src/lib/manuals/presentation";
@@ -6,6 +7,10 @@ import { loadManualSnapshot } from "@/src/lib/manuals/server";
 import type { ManualPage } from "@/src/types/manual";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "マニュアル一覧",
+};
 
 export default async function ManualsPage() {
   const result = await loadManualSnapshot();

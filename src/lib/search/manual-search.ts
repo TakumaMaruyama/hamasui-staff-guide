@@ -17,9 +17,39 @@ function queryTerms(query: string): string[] {
   return [...new Set(normalizeSearchText(query).split(" ").filter(Boolean))];
 }
 
+type NormalizedPageFields = {
+  title: string;
+  headings: string;
+  body: string;
+  combined: string;
+};
+
+const normalizedPageFieldsCache = new WeakMap<ManualSnapshot, Map<ManualPage, NormalizedPageFields>>();
+
+function normalizedPageFields(snapshot: ManualSnapshot, page: ManualPage): NormalizedPageFields {
+  let cache = normalizedPageFieldsCache.get(snapshot);
+  if (!cache) {
+    cache = new Map();
+    normalizedPageFieldsCache.set(snapshot, cache);
+  }
+  const cached = cache.get(page);
+  if (cached) return cached;
+
+  const title = `${page.title} ${page.breadcrumbs.map((crumb) => crumb.title).join(" ")}`;
+  const headings = page.headings.map((heading) => heading.text).join(" ");
+  const body = page.plainText;
+  const fields = {
+    title: normalizeSearchText(title),
+    headings: normalizeSearchText(headings),
+    body: normalizeSearchText(body),
+    combined: normalizeSearchText(`${title}\n${headings}\n${body}`),
+  };
+  cache.set(page, fields);
+  return fields;
+}
+
 function includesAll(value: string, terms: string[]): boolean {
-  const normalized = normalizeSearchText(value);
-  return terms.every((term) => normalized.includes(term));
+  return terms.every((term) => value.includes(term));
 }
 
 type NormalizedCharacter = { start: number; end: number };
@@ -92,10 +122,11 @@ export function searchManual(snapshot: ManualSnapshot, query: string, limit = 30
       const title = `${page.title} ${page.breadcrumbs.map((crumb) => crumb.title).join(" ")}`;
       const headings = page.headings.map((heading) => heading.text).join(" ");
       const body = page.plainText;
-      const inTitle = includesAll(title, terms);
-      const inHeadings = includesAll(headings, terms);
-      const inBody = includesAll(body, terms);
-      const inCombined = includesAll(`${title}\n${headings}\n${body}`, terms);
+      const normalized = normalizedPageFields(snapshot, page);
+      const inTitle = includesAll(normalized.title, terms);
+      const inHeadings = includesAll(normalized.headings, terms);
+      const inBody = includesAll(normalized.body, terms);
+      const inCombined = includesAll(normalized.combined, terms);
       if (!inCombined) return [];
       const matchedIn: ManualSearchResult["matchedIn"] = inTitle
         ? "title"

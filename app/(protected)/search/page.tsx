@@ -1,10 +1,15 @@
 import Link from "next/link";
+import type { Metadata } from "next";
 import { ManualUnavailable, StaleWarning } from "@/src/components/manual-state";
 import { SearchForm } from "@/src/components/search-form";
 import { loadManualSnapshot } from "@/src/lib/manuals/server";
 import { searchManual } from "@/src/lib/search";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "マニュアル検索",
+};
 
 type SearchPageProps = {
   searchParams: Promise<{ q?: string | string[] }>;

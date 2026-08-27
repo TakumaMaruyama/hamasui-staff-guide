@@ -149,9 +149,9 @@ function SingleBlock({ block, pageTitle }: { block: ManualBlock; pageTitle: stri
               </video>
             </>
           ) : (
-            <a className="manual-file" href={src} target="_blank" rel="noreferrer">
+            <a className="manual-file" href={src} target="_blank" rel="noopener noreferrer">
               <span aria-hidden="true">VIDEO</span>
-              <span>{caption || "動画を開く"}</span>
+              <span>{caption || "動画を開く"}<span className="sr-only">（新しいタブで開きます）</span></span>
             </a>
           )}
           {caption ? <figcaption>{caption}</figcaption> : null}
@@ -165,9 +165,9 @@ function SingleBlock({ block, pageTitle }: { block: ManualBlock; pageTitle: stri
       const href = safeMediaUrl(block.media.url);
       const caption = richTextPlain(block.media.caption);
       return href ? (
-        <a className="manual-file" href={href} target="_blank" rel="noreferrer">
+        <a className="manual-file" href={href} target="_blank" rel="noopener noreferrer">
           <span aria-hidden="true">{block.type === "pdf" ? "PDF" : "FILE"}</span>
-          <span>{caption || block.media.name || "ファイルを開く"}</span>
+          <span>{caption || block.media.name || "ファイルを開く"}<span className="sr-only">（新しいタブで開きます）</span></span>
         </a>
       ) : (
         <div className="manual-media-fallback">ファイルを表示できません。</div>
@@ -177,8 +177,8 @@ function SingleBlock({ block, pageTitle }: { block: ManualBlock; pageTitle: stri
       const href = safeMediaUrl(block.url);
       const label = richTextPlain(block.caption) || block.url || "参考リンク";
       return href ? (
-        <a className="manual-bookmark" href={href} target="_blank" rel="noreferrer">
-          <span>{label}</span><span aria-hidden="true">↗</span>
+        <a className="manual-bookmark" href={href} target="_blank" rel="noopener noreferrer">
+          <span>{label}<span className="sr-only">（新しいタブで開きます）</span></span><span aria-hidden="true">↗</span>
         </a>
       ) : (
         <p>{label}</p>

@@ -24,7 +24,7 @@ const NOTION_COLORS = new Set([
 
 function safeHref(href?: string): string | undefined {
   if (!href) return undefined;
-  if (href.startsWith("/")) return href;
+  if (href.startsWith("/") && !href.startsWith("//") && !href.startsWith("/\\")) return href;
   try {
     const url = new URL(href);
     return ["http:", "https:", "mailto:", "tel:"].includes(url.protocol) ? href : undefined;
@@ -43,9 +43,11 @@ function StyledText({ value }: { value: ManualRichTextValue }) {
 
   const href = safeHref(value.href);
   if (href) {
+    const opensNewTab = /^https?:/i.test(href);
     content = (
-      <a href={href} target={href.startsWith("http") ? "_blank" : undefined} rel="noreferrer">
+      <a href={href} target={opensNewTab ? "_blank" : undefined} rel={opensNewTab ? "noopener noreferrer" : undefined}>
         {content}
+        {opensNewTab ? <span className="sr-only">（新しいタブで開きます）</span> : null}
       </a>
     );
   }

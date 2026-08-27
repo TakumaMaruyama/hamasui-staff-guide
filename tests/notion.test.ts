@@ -172,6 +172,63 @@ describe("Notion manual repository", () => {
     expect((await cache.get(async () => ({ ...snapshot, syncedAt: "second" }), true)).source).toBe("fresh");
     expect((await cache.get(async () => ({ ...snapshot, syncedAt: "third" }), true)).warning).toBe("refresh-cooldown");
     now = 40;
-    expect((await cache.get(async () => { throw new Error("offline"); })).warning).toBe("stale-fallback");
+    expect((await cache.get(async () => { throw new Error("offline"); }, true)).warning).toBe("stale-fallback");
+  });
+
+  it("returns an expired snapshot immediately and starts only one background refresh", async () => {
+    let now = 0;
+    let resolveRefresh!: (snapshot: { rootPageId: string; pages: never[]; syncedAt: string }) => void;
+    const cache = new ManualSnapshotCache({ ttlMs: 1, now: () => now });
+    const first = { rootPageId: "root", pages: [], syncedAt: "first" };
+    const loader = vi.fn(() => new Promise<typeof first>((resolve) => { resolveRefresh = resolve; }));
+    await cache.get(async () => first);
+
+    now = 2;
+    await expect(cache.get(loader)).resolves.toMatchObject({ snapshot: first, source: "cache" });
+    await expect(cache.get(loader)).resolves.toMatchObject({ snapshot: first, source: "cache" });
+    expect(loader).toHaveBeenCalledTimes(1);
+
+    resolveRefresh({ ...first, syncedAt: "second" });
+    await vi.waitFor(() => expect(cache.get(async () => first)).resolves.toMatchObject({ source: "cache", snapshot: { syncedAt: "second" } }));
+  });
+
+  it("waits for a forced refresh while regular readers keep the current snapshot", async () => {
+    let now = 0;
+    let resolveRefresh!: (snapshot: { rootPageId: string; pages: never[]; syncedAt: string }) => void;
+    const cache = new ManualSnapshotCache({ ttlMs: 100, refreshCooldownMs: 30, now: () => now });
+    const first = { rootPageId: "root", pages: [], syncedAt: "first" };
+    const loader = vi.fn(() => new Promise<typeof first>((resolve) => { resolveRefresh = resolve; }));
+    await cache.get(async () => first);
+
+    now = 1;
+    const forced = cache.get(loader, true);
+    await expect(cache.get(async () => ({ ...first, syncedAt: "unexpected" }))).resolves.toMatchObject({ source: "cache", snapshot: first });
+    expect(loader).toHaveBeenCalledTimes(1);
+
+    resolveRefresh({ ...first, syncedAt: "second" });
+    await expect(forced).resolves.toMatchObject({ source: "fresh", snapshot: { syncedAt: "second" } });
+  });
+
+  it("keeps a failed background refresh visible as stale data until a later refresh recovers", async () => {
+    let now = 0;
+    const cache = new ManualSnapshotCache({ ttlMs: 1, automaticRetryCooldownMs: 30, now: () => now });
+    const first = { rootPageId: "root", pages: [], syncedAt: "first" };
+    const failedLoader = vi.fn(async () => { throw new Error("offline"); });
+    await cache.get(async () => first);
+
+    now = 2;
+    await expect(cache.get(failedLoader)).resolves.toMatchObject({ source: "cache", snapshot: first });
+    await vi.waitFor(() => expect(failedLoader).toHaveBeenCalledTimes(1));
+    await new Promise<void>((resolve) => setImmediate(resolve));
+
+    const recovery = vi.fn(async () => ({ ...first, syncedAt: "second" }));
+    await expect(cache.get(recovery)).resolves.toMatchObject({ source: "stale", warning: "stale-fallback", snapshot: first });
+    expect(recovery).not.toHaveBeenCalled();
+
+    now = 32;
+    await expect(cache.get(recovery)).resolves.toMatchObject({ source: "stale", warning: "stale-fallback", snapshot: first });
+    await vi.waitFor(() => expect(recovery).toHaveBeenCalledTimes(1));
+    await new Promise<void>((resolve) => setImmediate(resolve));
+    await expect(cache.get(async () => first)).resolves.toMatchObject({ source: "cache", snapshot: { syncedAt: "second" } });
   });
 });

@@ -84,4 +84,33 @@ describe("manual block renderer", () => {
     expect(html).toContain("このリンク先はアプリ内で表示できません");
     expect(html).not.toContain("href=");
   });
+
+  it("mounts only the thumbnail image until the lightbox is opened", () => {
+    const image: ManualBlock = {
+      id: "pool-layout",
+      children: [],
+      type: "image",
+      media: { url: "https://example.com/pool.jpg", caption: [] },
+    };
+
+    const html = renderToStaticMarkup(<ManualBlocks blocks={[image]} pageTitle="プール配置" />);
+
+    expect(html.match(/<img/g)).toHaveLength(1);
+    expect(html).not.toContain("<dialog");
+  });
+
+  it("announces that external manual links open in a new tab", () => {
+    const bookmark: ManualBlock = {
+      id: "reference",
+      children: [],
+      type: "bookmark",
+      url: "https://example.com/reference",
+      caption: [],
+    };
+
+    const html = renderToStaticMarkup(<ManualBlocks blocks={[bookmark]} pageTitle="スタッフガイド" />);
+
+    expect(html).toContain('rel="noopener noreferrer"');
+    expect(html).toContain("新しいタブで開きます");
+  });
 });

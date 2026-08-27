@@ -1,4 +1,7 @@
 import Link from "next/link";
+import type { Metadata } from "next";
+import { Suspense } from "react";
+import { ManualLoading } from "@/src/components/manual-loading";
 import { ManualUnavailable, StaleWarning } from "@/src/components/manual-state";
 import { SearchForm } from "@/src/components/search-form";
 import { SyncButton } from "@/src/components/sync-button";
@@ -12,7 +15,11 @@ import { loadManualSnapshot } from "@/src/lib/manuals/server";
 
 export const dynamic = "force-dynamic";
 
-export default async function HomePage() {
+export const metadata: Metadata = {
+  title: "ホーム",
+};
+
+async function HomeContent() {
   const result = await loadManualSnapshot();
   if (!result.ok) {
     return (
@@ -137,5 +144,13 @@ export default async function HomePage() {
         </footer>
       </div>
     </>
+  );
+}
+
+export default function HomePage() {
+  return (
+    <Suspense fallback={<ManualLoading variant="home" />}>
+      <HomeContent />
+    </Suspense>
   );
 }

@@ -54,9 +54,26 @@ function displayExcerpt(value: string, maxLength = 72): string {
   return normalized.length > maxLength ? `${normalized.slice(0, maxLength)}…` : normalized;
 }
 
-function descendantCount(pageId: string, pages: ManualPage[]): number {
-  const children = pages.filter((page) => page.parentId === pageId);
-  return children.reduce((count, child) => count + 1 + descendantCount(child.id, pages), 0);
+function descendantCounter(pages: ManualPage[]): (pageId: string) => number {
+  const childrenByParent = new Map<string, ManualPage[]>();
+  for (const page of pages) {
+    if (!page.parentId) continue;
+    const children = childrenByParent.get(page.parentId) ?? [];
+    children.push(page);
+    childrenByParent.set(page.parentId, children);
+  }
+  const memo = new Map<string, number>();
+  const count = (pageId: string): number => {
+    const cached = memo.get(pageId);
+    if (cached !== undefined) return cached;
+    const descendants = (childrenByParent.get(pageId) ?? []).reduce(
+      (total, child) => total + 1 + count(child.id),
+      0,
+    );
+    memo.set(pageId, descendants);
+    return descendants;
+  };
+  return count;
 }
 
 function headingSections(root: ManualPage): ManualCategory[] {
@@ -93,12 +110,13 @@ export function categoriesFromSnapshot(snapshot: ManualSnapshot): ManualCategory
 
   const directChildren = snapshot.pages.filter((page) => page.parentId === root.id);
   const source = directChildren.length > 0 ? directChildren : snapshot.pages;
+  const countDescendants = descendantCounter(snapshot.pages);
   return source.map((page) => ({
     id: page.id,
     title: page.title,
     description: displayExcerpt(firstBodyText(page.blocks)) || "このマニュアルを確認する",
     href: `/manual/${encodeURIComponent(page.slug)}`,
-    pageCount: 1 + descendantCount(page.id, snapshot.pages),
+    pageCount: 1 + countDescendants(page.id),
     isSafety: isSafetyTitle(page.title),
   }));
 }

@@ -20,7 +20,6 @@ export function SearchForm({ defaultValue = "", compact = false }: SearchFormPro
           name="q"
           defaultValue={defaultValue}
           placeholder="例：進級基準、緊急時対応"
-          autoComplete="off"
         />
         <button type="submit">検索</button>
       </div>

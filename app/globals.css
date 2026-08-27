@@ -48,6 +48,25 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+.skip-link {
+  position: fixed;
+  z-index: 100;
+  top: 8px;
+  left: 8px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: var(--navy-950);
+  color: white;
+  font-weight: 800;
+  text-decoration: none;
+  transform: translateY(-160%);
+  transition: transform 120ms ease;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
 a {
   color: inherit;
 }
@@ -171,7 +190,7 @@ video {
 
 .app-main {
   min-height: calc(100vh - 68px);
-  padding-bottom: 88px;
+  padding-bottom: calc(88px + env(safe-area-inset-bottom));
 }
 
 .mobile-nav {
@@ -197,6 +216,11 @@ video {
   min-height: 64px;
   color: var(--navy-800);
   text-decoration: none;
+}
+
+.mobile-nav a[aria-current="page"] {
+  background: var(--blue-50);
+  color: var(--navy-950);
 }
 
 .mobile-nav a span {
@@ -839,6 +863,53 @@ video {
   text-decoration: none;
 }
 
+.state-panel__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.state-panel__actions button {
+  min-height: 44px;
+}
+
+.manual-loading {
+  width: min(100%, var(--content-width));
+  margin: 0 auto;
+  padding: 28px 18px 80px;
+}
+
+.manual-loading__hero,
+.manual-loading__block,
+.manual-loading__line {
+  border-radius: 10px;
+  background: linear-gradient(90deg, #e6eef1 25%, #f6fafb 50%, #e6eef1 75%);
+  background-size: 200% 100%;
+  animation: loading-shimmer 1.4s ease-in-out infinite;
+}
+
+.manual-loading__hero {
+  height: 180px;
+  margin: -28px -18px 24px;
+  border-radius: 0;
+}
+
+.manual-loading__block {
+  height: 116px;
+  margin-top: 12px;
+}
+
+.manual-loading__line {
+  width: 70%;
+  height: 18px;
+  margin: 14px 0;
+}
+
+@keyframes loading-shimmer {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+
 .manual-page {
   width: min(100%, 1180px);
   margin: 0 auto;
@@ -1453,7 +1524,8 @@ video {
     text-decoration: none;
   }
 
-  .desktop-nav a:hover {
+  .desktop-nav a:hover,
+  .desktop-nav a[aria-current="page"] {
     background: var(--blue-50);
   }
 
@@ -1555,9 +1627,16 @@ video {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
   }
+
+  .manual-loading__hero,
+  .manual-loading__block,
+  .manual-loading__line {
+    animation: none;
+  }
 }
 
 @media print {
+  .skip-link,
   .site-header,
   .mobile-nav,
   .desktop-toc,

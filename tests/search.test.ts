@@ -38,4 +38,11 @@ describe("manual search", () => {
       matchedIn: "multiple",
     });
   });
+
+  it("keeps normalized search data scoped to each snapshot", () => {
+    const refreshed = { ...snapshot, pages: [{ ...snapshot.pages[0], title: "研修" }] };
+    expect(searchManual(snapshot, "安全")[0]?.page.id).toBe("title");
+    expect(searchManual(refreshed, "研修")[0]?.page.id).toBe("title");
+    expect(searchManual(refreshed, "安全").some((result) => result.page.id === "title")).toBe(false);
+  });
 });

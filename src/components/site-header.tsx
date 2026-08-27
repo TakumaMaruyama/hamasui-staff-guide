@@ -1,7 +1,12 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { siteConfig } from "@/src/config/site";
 
 export function SiteHeader() {
+  const pathname = usePathname();
+
   return (
     <header className="site-header">
       <div className="site-header__inner">
@@ -16,9 +21,14 @@ export function SiteHeader() {
         </Link>
 
         <nav className="desktop-nav" aria-label="メインナビゲーション">
-          <Link href="/">ホーム</Link>
-          <Link href="/search">検索</Link>
-          <Link href="/manuals">すべてのマニュアル</Link>
+          <Link href="/" aria-current={pathname === "/" ? "page" : undefined}>ホーム</Link>
+          <Link href="/search" aria-current={pathname === "/search" ? "page" : undefined}>検索</Link>
+          <Link
+            href="/manuals"
+            aria-current={pathname === "/manuals" || pathname.startsWith("/manual/") ? "page" : undefined}
+          >
+            すべてのマニュアル
+          </Link>
         </nav>
       </div>
     </header>

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { logManualLoadError } from "@/src/lib/manuals/server";
 import { getManualRepository } from "@/src/lib/notion";
 import { sameOrigin } from "@/src/lib/security/origin";
 
@@ -24,7 +25,8 @@ export async function POST(request: Request) {
       );
     }
     return NextResponse.json({ ok: true, syncedAt: result.snapshot.syncedAt });
-  } catch {
+  } catch (error) {
+    logManualLoadError(error);
     return NextResponse.json(
       { error: "マニュアルを取得できませんでした。" },
       { status: 503 },

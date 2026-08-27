@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { RetryButton } from "./retry-button";
 
 export function ManualUnavailable({ hasCache = false }: { hasCache?: boolean }) {
   return (
@@ -11,7 +12,10 @@ export function ManualUnavailable({ hasCache = false }: { hasCache?: boolean }) 
             ? "最新情報を取得できなかったため、前回取得した内容を表示しています。"
             : "時間を置いて、もう一度お試しください。"}
         </p>
-        <Link href="/">ホームに戻る</Link>
+        <div className="state-panel__actions">
+          <RetryButton />
+          <Link href="/">ホームに戻る</Link>
+        </div>
       </div>
     </div>
   );
@@ -20,7 +24,7 @@ export function ManualUnavailable({ hasCache = false }: { hasCache?: boolean }) 
 export function StaleWarning({ syncedAt }: { syncedAt: string }) {
   return (
     <div className="stale-warning" role="status">
-      <strong>前回取した内容を表示しています。</strong>
+      <strong>前回取得した内容を表示しています。</strong>
       <span>最新情報を取得できませんでした。最終同期: {new Date(syncedAt).toLocaleString("ja-JP")}</span>
     </div>
   );
