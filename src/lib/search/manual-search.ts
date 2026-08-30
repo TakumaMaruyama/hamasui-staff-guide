@@ -1,4 +1,5 @@
 import type { ManualPage, ManualSnapshot } from "@/src/types/manual";
+import { blockAnchorId } from "@/src/lib/manuals/presentation";
 
 export type SearchExcerptPart = { text: string; highlighted: boolean };
 export type ManualSearchResult = {
@@ -7,6 +8,7 @@ export type ManualSearchResult = {
   matchedIn: "title" | "heading" | "multiple" | "body";
   excerpt: string;
   excerptParts: SearchExcerptPart[];
+  targetAnchorId?: string;
 };
 
 export function normalizeSearchText(value: string): string {
@@ -128,6 +130,9 @@ export function searchManual(snapshot: ManualSnapshot, query: string, limit = 30
       const inBody = includesAll(normalized.body, terms);
       const inCombined = includesAll(normalized.combined, terms);
       if (!inCombined) return [];
+      const matchedHeading = page.headings.find((heading) =>
+        includesAll(normalizeSearchText(heading.text), terms),
+      );
       const matchedIn: ManualSearchResult["matchedIn"] = inTitle
         ? "title"
         : inHeadings
@@ -149,6 +154,7 @@ export function searchManual(snapshot: ManualSnapshot, query: string, limit = 30
         matchedIn,
         excerpt,
         excerptParts: highlightSearchText(excerpt, terms),
+        ...(matchedHeading ? { targetAnchorId: blockAnchorId(matchedHeading.id) } : {}),
       }];
     })
     .sort((a, b) => b.score - a.score || a.page.title.localeCompare(b.page.title, "ja-JP"))

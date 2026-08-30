@@ -23,6 +23,8 @@ export function SiteHeader() {
         <nav className="desktop-nav" aria-label="メインナビゲーション">
           <Link href="/" aria-current={pathname === "/" ? "page" : undefined}>ホーム</Link>
           <Link href="/search" aria-current={pathname === "/search" ? "page" : undefined}>検索</Link>
+          <Link href="/coaching" aria-current={pathname === "/coaching" ? "page" : undefined}>指導を探す</Link>
+          <Link href="/emergency" aria-current={pathname === "/emergency" ? "page" : undefined}>安全・緊急</Link>
           <Link
             href="/manuals"
             aria-current={pathname === "/manuals" || pathname.startsWith("/manual/") ? "page" : undefined}

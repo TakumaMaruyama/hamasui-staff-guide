@@ -1,48 +1,40 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 
 const items = [
-  { href: "/", icon: "■", label: "ホーム", match: "home" },
+  { href: "/", icon: "⌂", label: "ホーム", match: "home" },
   { href: "/search", icon: "⌕", label: "検索", match: "search" },
-  {
-    href: "/search?q=%E5%AE%89%E5%85%A8",
-    icon: "!",
-    label: "安全",
-    accessibleLabel: "安全・緊急対応を検索",
-    match: "shortcut",
-  },
+  { href: "/coaching", icon: "泳", label: "指導", match: "coaching" },
+  { href: "/emergency", icon: "!", label: "安全", match: "emergency" },
   { href: "/manuals", icon: "≡", label: "一覧", match: "manuals" },
 ] as const;
 
 export function MobileNavigation() {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const isSafetySearch = pathname === "/search" && searchParams.get("q") === "安全";
-
-  return <NavigationItems pathname={pathname} isSafetySearch={isSafetySearch} />;
+  return <NavigationItems pathname={pathname} />;
 }
 
 export function MobileNavigationFallback() {
-  return <NavigationItems pathname="" isSafetySearch={false} />;
+  return <NavigationItems pathname="" />;
 }
 
-function NavigationItems({ pathname, isSafetySearch }: { pathname: string; isSafetySearch: boolean }) {
+function NavigationItems({ pathname }: { pathname: string }) {
   return (
     <nav className="mobile-nav" aria-label="モバイルナビゲーション">
       {items.map((item) => {
         const isCurrent =
           (item.match === "home" && pathname === "/")
-          || (item.match === "search" && pathname === "/search" && !isSafetySearch)
-          || (item.match === "shortcut" && isSafetySearch)
+          || (item.match === "search" && pathname === "/search")
+          || (item.match === "coaching" && pathname === "/coaching")
+          || (item.match === "emergency" && pathname === "/emergency")
           || (item.match === "manuals" && (pathname === "/manuals" || pathname.startsWith("/manual/")));
         return (
           <Link
             href={item.href}
             key={item.href}
             aria-current={isCurrent ? "page" : undefined}
-            aria-label={"accessibleLabel" in item ? item.accessibleLabel : undefined}
           >
             <span aria-hidden="true">{item.icon}</span>
             <small>{item.label}</small>

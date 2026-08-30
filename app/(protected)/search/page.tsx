@@ -46,7 +46,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
             <ol>
               {results.map((result) => (
                 <li key={result.page.id}>
-                  <Link href={`/manual/${encodeURIComponent(result.page.slug)}`}>
+                  <Link href={`/manual/${encodeURIComponent(result.page.slug)}${result.targetAnchorId ? `#${result.targetAnchorId}` : ""}`}>
                     <span className="search-result__meta">
                       {result.page.breadcrumbs.map((crumb) => crumb.title).join(" / ") || "マニュアル"}
                     </span>

@@ -16,6 +16,31 @@ describe("manual search", () => {
   it("normalizes NFKC Japanese queries and ranks title, heading, then body", () => {
     expect(normalizeSearchText("  ＡＢＣ　安全  ")).toBe("abc 安全");
     expect(searchManual(snapshot, "安全").map((result) => result.matchedIn)).toEqual(["title", "heading", "body"]);
+    expect(searchManual(snapshot, "安全")[1]?.targetAnchorId).toBe("block-h");
+  });
+
+  it("targets a heading only when every term matches that same heading", () => {
+    const splitHeadings: ManualSnapshot = {
+      ...snapshot,
+      pages: [{
+        ...snapshot.pages[1],
+        headings: [
+          { id: "first", text: "入水", level: 2 },
+          { id: "second", text: "安全確認", level: 2 },
+        ],
+        plainText: "入水前の安全確認",
+      }],
+    };
+
+    expect(searchManual(splitHeadings, "入水 安全")[0]).toMatchObject({
+      matchedIn: "heading",
+    });
+    expect(searchManual(splitHeadings, "入水 安全")[0]?.targetAnchorId).toBeUndefined();
+    expect(searchManual(splitHeadings, "安全確認")[0]?.targetAnchorId).toBe("block-second");
+  });
+
+  it("leaves body-only matches at the page top", () => {
+    expect(searchManual(snapshot, "入水 安全")[0]?.targetAnchorId).toBeUndefined();
   });
 
   it("requires every query term and supplies highlight-ready excerpts", () => {

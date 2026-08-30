@@ -2,12 +2,17 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { ManualLoading } from "@/src/components/manual-loading";
+import { ManualPreferenceLists } from "@/src/components/manual-preferences";
 import { ManualUnavailable, StaleWarning } from "@/src/components/manual-state";
 import { SearchForm } from "@/src/components/search-form";
 import { SyncButton } from "@/src/components/sync-button";
 import { iconForCategory, siteConfig } from "@/src/config/site";
 import {
-  categoriesFromSnapshot,
+  fieldManualGroups,
+  type FieldManualGroup,
+  type FieldManualGroupKey,
+} from "@/src/lib/manuals/field-navigation";
+import {
   formatDate,
   recentPages,
 } from "@/src/lib/manuals/presentation";
@@ -30,10 +35,12 @@ async function HomeContent() {
   }
 
   const { snapshot, source, warning } = result.data;
-  const categories = categoriesFromSnapshot(snapshot);
-  const safety = categories.find((category) => category.isSafety);
+  const groups = fieldManualGroups(snapshot);
   const updates = recentPages(snapshot);
   const root = snapshot.pages.find((page) => page.id === snapshot.rootPageId);
+  const pageSummaries = snapshot.pages
+    .filter((page) => page.id !== snapshot.rootPageId)
+    .map(({ id, title, slug }) => ({ id, title, slug }));
 
   return (
     <>
@@ -51,53 +58,56 @@ async function HomeContent() {
       </section>
 
       <div className="page-container home-content">
-        <SearchForm />
-
-        <Link
-          className="safety-quick-link"
-          href={safety?.href ?? "/search?q=%E5%AE%89%E5%85%A8"}
-        >
-          <span className="safety-quick-link__icon" aria-hidden="true">!</span>
-          <span>
-            <strong>安全・緊急対応</strong>
-            <small>事故や急変時の判断基準を最優先で確認する</small>
-          </span>
-          <span aria-hidden="true">→</span>
-        </Link>
-
-        <section className="home-section" aria-labelledby="categories-title">
+        <section className="field-command-panel" aria-labelledby="field-command-title">
           <div className="section-heading">
             <div>
-              <p className="eyebrow">マニュアル</p>
-              <h2 id="categories-title">目的から探す</h2>
+              <p className="eyebrow">業務場面から選ぶ</p>
+              <h2 id="field-command-title">今やること</h2>
             </div>
-            <Link href="/manuals">すべて見る →</Link>
           </div>
 
-          {categories.length > 0 ? (
-            <div className="category-grid">
-              {categories.map((category) => (
-                <Link
-                  className={category.isSafety ? "category-card category-card--safety" : "category-card"}
-                  href={category.href}
-                  key={category.id}
-                >
-                  <span className="category-card__icon" aria-hidden="true">
-                    {iconForCategory(category.title)}
+          <Link className="safety-quick-link" href="/emergency">
+            <span className="safety-quick-link__icon" aria-hidden="true">!</span>
+            <span>
+              <strong>安全・緊急対応</strong>
+              <small>事故や急変時の対応を確認する</small>
+            </span>
+            <span aria-hidden="true">→</span>
+          </Link>
+
+          <div className="field-action-grid">
+            {PRIMARY_FIELD_LINKS.map((item) => {
+              const group = groups.find((candidate) => candidate.key === item.key);
+              return (
+                <Link className="field-action-card" href={item.href} key={item.key}>
+                  <span className="field-action-card__icon" aria-hidden="true">
+                    {iconForCategory(group?.title ?? item.label)}
                   </span>
-                  <span className="category-card__body">
-                    <strong>{category.title}</strong>
-                    <small>{category.description}</small>
-                    <span>{category.pageCount}ページ</span>
+                  <span>
+                    <strong>{item.label}</strong>
+                    <small>{group?.pages.length ?? 0}件</small>
                   </span>
                   <span aria-hidden="true">→</span>
                 </Link>
-              ))}
-            </div>
-          ) : (
-            <p className="empty-state">Notionの見出しまたは子ページがここに表示されます。</p>
-          )}
+              );
+            })}
+          </div>
         </section>
+
+        <div className="home-search"><SearchForm /></div>
+
+        <ManualPreferenceLists pages={pageSummaries} />
+
+        {PRIMARY_FIELD_LINKS.filter((item) => item.key !== "coaching").map((item) => (
+          <FieldManualSection
+            group={groups.find((candidate) => candidate.key === item.key)}
+            id={`field-${item.key}`}
+            key={item.key}
+            title={item.label}
+          />
+        ))}
+
+        <SecondaryManualSection groups={groups} />
 
         <section className="home-section" aria-labelledby="recent-title">
           <div className="section-heading">
@@ -144,6 +154,68 @@ async function HomeContent() {
         </footer>
       </div>
     </>
+  );
+}
+
+const PRIMARY_FIELD_LINKS: Array<{
+  key: Extract<FieldManualGroupKey, "before" | "coaching" | "after" | "guardian">;
+  label: string;
+  href: string;
+}> = [
+  { key: "before", label: "指導前", href: "#field-before" },
+  { key: "coaching", label: "水泳指導", href: "/coaching" },
+  { key: "after", label: "指導後", href: "#field-after" },
+  { key: "guardian", label: "保護者対応", href: "#field-guardian" },
+];
+
+function FieldManualSection({ group, id, title }: { group?: FieldManualGroup; id: string; title: string }) {
+  if (!group || group.pages.length === 0) return null;
+  return (
+    <section className="home-section field-manual-section" id={id} aria-labelledby={`${id}-title`}>
+      <div className="section-heading">
+        <div>
+          <p className="eyebrow">{group.title}</p>
+          <h2 id={`${id}-title`}>{title}</h2>
+        </div>
+      </div>
+      <div className="field-page-grid">
+        {group.pages.map((page) => (
+          <Link href={`/manual/${encodeURIComponent(page.slug)}`} key={page.id}>
+            <strong>{page.title}</strong>
+            <span aria-hidden="true">→</span>
+          </Link>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function SecondaryManualSection({ groups }: { groups: FieldManualGroup[] }) {
+  const secondaryGroups = groups.filter(
+    (group) => (group.key === "intro" || group.key === "other") && group.pages.length > 0,
+  );
+  if (secondaryGroups.length === 0) return null;
+  return (
+    <section className="home-section secondary-manuals" aria-labelledby="secondary-manuals-title">
+      <div className="section-heading">
+        <div>
+          <p className="eyebrow">はじめに・その他</p>
+          <h2 id="secondary-manuals-title">その他のマニュアル</h2>
+        </div>
+      </div>
+      <div className="secondary-manuals__groups">
+        {secondaryGroups.map((group, index) => (
+          <div className="secondary-manual-group" key={`${group.key}-${group.sourceTitle ?? group.title}-${index}`}>
+            <h3>{group.sourceTitle ?? group.title}</h3>
+            <div className="secondary-manuals__links">
+              {group.pages.map((page) => (
+                <Link href={`/manual/${encodeURIComponent(page.slug)}`} key={page.id}>{page.title}</Link>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }
 
