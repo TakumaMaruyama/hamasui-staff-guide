@@ -1836,6 +1836,25 @@ video {
   margin-top: 24px;
 }
 
+.coaching-overview {
+  margin-top: 28px;
+}
+
+.coaching-overview__images {
+  display: grid;
+  gap: 18px;
+}
+
+.coaching-overview__images .manual-image,
+.coaching-course__poster .manual-image {
+  margin: 0;
+}
+
+.coaching-overview__images .manual-image > button,
+.coaching-course__poster .manual-image > button {
+  background: var(--blue-50);
+}
+
 .coaching-course-nav a {
   display: grid;
   min-height: 52px;
@@ -1908,6 +1927,10 @@ video {
   font-size: 0.76rem;
   font-weight: 800;
   text-decoration: none;
+}
+
+.coaching-course__poster {
+  margin-top: 16px;
 }
 
 .coaching-skill-grid {

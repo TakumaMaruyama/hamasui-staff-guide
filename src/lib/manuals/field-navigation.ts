@@ -102,8 +102,12 @@ function descendants(snapshot: ManualSnapshot, page: ManualPage): ManualPage[] {
   return result;
 }
 
-export type CoachingCourse = { title: string; page?: ManualPage; pages: ManualPage[] };
 const COURSE_NAMES = ["初級", "中級", "上級", "チャレンジ"] as const;
+export type CoachingCourse = {
+  title: (typeof COURSE_NAMES)[number];
+  page?: ManualPage;
+  pages: ManualPage[];
+};
 
 export function coachingCourses(snapshot: ManualSnapshot): { courses: CoachingCourse[]; hints: ManualPage[] } {
   const group = fieldManualGroups(snapshot).find((item) => item.key === "coaching");

@@ -6,9 +6,11 @@ type ImageLightboxProps = {
   src: string;
   alt: string;
   caption?: string;
+  width?: number;
+  height?: number;
 };
 
-export function ImageLightbox({ src, alt, caption }: ImageLightboxProps) {
+export function ImageLightbox({ src, alt, caption, width, height }: ImageLightboxProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -69,6 +71,8 @@ export function ImageLightbox({ src, alt, caption }: ImageLightboxProps) {
         <img
           src={src}
           alt={alt}
+          width={width}
+          height={height}
           loading="lazy"
           decoding="async"
           onError={() => setFailed(true)}
@@ -109,7 +113,13 @@ export function ImageLightbox({ src, alt, caption }: ImageLightboxProps) {
         </div>
         <div className="image-dialog__canvas">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={src} alt={alt} style={{ transform: `scale(${zoom})` }} />
+          <img
+            src={src}
+            alt={alt}
+            width={width}
+            height={height}
+            style={{ transform: `scale(${zoom})` }}
+          />
         </div>
         {caption ? <p>{caption}</p> : null}
       </dialog> : null}

@@ -1,11 +1,60 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { ImageLightbox } from "@/src/components/image-lightbox";
 import { ManualUnavailable, StaleWarning } from "@/src/components/manual-state";
 import { coachingCourses } from "@/src/lib/manuals/field-navigation";
 import { loadManualSnapshot } from "@/src/lib/manuals/server";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "指導を探す" };
+
+const OVERVIEW_IMAGES = [
+  {
+    src: "/images/coaching/coaching-philosophy.jpg",
+    alt: "泳ぎの技術だけでなく、できた体験や非認知能力を育てる指導の考え方",
+    caption: "はまスイの指導哲学",
+    width: 1280,
+    height: 714,
+  },
+  {
+    src: "/images/coaching/course-map.jpg",
+    alt: "初級からチャレンジまでの目標、練習内容、昇級基準をまとめた全体図",
+    caption: "はまスイ指導マップ",
+    width: 1280,
+    height: 960,
+  },
+] as const;
+
+const COURSE_POSTERS = {
+  "初級": {
+    src: "/images/coaching/beginner-course.jpg",
+    alt: "水に慣れ、自分で呼吸しながら泳ぐ土台づくりの目標と指導ポイント",
+    caption: "初級コース",
+    width: 1024,
+    height: 1280,
+  },
+  "中級": {
+    src: "/images/coaching/intermediate-course.jpg",
+    alt: "呼吸しながらクロールで長く泳ぐ力を育てる目標と指導ポイント",
+    caption: "中級コース",
+    width: 1024,
+    height: 1280,
+  },
+  "上級": {
+    src: "/images/coaching/advanced-course.jpg",
+    alt: "四泳法の型を身につけ、競泳の練習へつなげる目標と指導ポイント",
+    caption: "上級コース",
+    width: 1024,
+    height: 1280,
+  },
+  "チャレンジ": {
+    src: "/images/coaching/challenge-course.jpg",
+    alt: "人としても競泳選手としても輝くための目標と指導ポイント",
+    caption: "チャレンジコース",
+    width: 960,
+    height: 1280,
+  },
+} as const;
 
 export default async function CoachingPage() {
   const result = await loadManualSnapshot();
@@ -31,6 +80,20 @@ export default async function CoachingPage() {
           <h1>指導を探す</h1>
           <p>コースから選び、目的の種目をすぐ確認できます。</p>
         </header>
+
+        <section className="coaching-overview" aria-labelledby="coaching-overview-title">
+          <div className="section-heading">
+            <div>
+              <p className="eyebrow">まず確認</p>
+              <h2 id="coaching-overview-title">指導の全体像</h2>
+            </div>
+          </div>
+          <div className="coaching-overview__images">
+            {OVERVIEW_IMAGES.map((image) => (
+              <ImageLightbox key={image.src} {...image} />
+            ))}
+          </div>
+        </section>
 
         <nav className="coaching-course-nav" aria-label="コースを選ぶ">
           {courses.map((course, index) => (
@@ -60,6 +123,10 @@ export default async function CoachingPage() {
                   </Link>
                 ) : null}
               </header>
+
+              <div className="coaching-course__poster">
+                <ImageLightbox {...COURSE_POSTERS[course.title]} />
+              </div>
 
               {course.pages.length > 0 ? (
                 <div className="coaching-skill-grid">

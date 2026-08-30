@@ -1,6 +1,7 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 import { ManualBlocks } from "../src/components/manual-blocks";
+import { ImageLightbox } from "../src/components/image-lightbox";
 import { blockFromNotion } from "../src/lib/notion/transform";
 import type { ManualBlock } from "../src/types/manual";
 
@@ -97,6 +98,21 @@ describe("manual block renderer", () => {
 
     expect(html.match(/<img/g)).toHaveLength(1);
     expect(html).not.toContain("<dialog");
+  });
+
+  it("preserves intrinsic dimensions for local reference images", () => {
+    const html = renderToStaticMarkup(
+      <ImageLightbox
+        src="/images/coaching/beginner-course.jpg"
+        alt="初級コースの指導資料"
+        width={1024}
+        height={1280}
+      />,
+    );
+
+    expect(html).toContain('src="/images/coaching/beginner-course.jpg"');
+    expect(html).toContain('width="1024"');
+    expect(html).toContain('height="1280"');
   });
 
   it("announces that external manual links open in a new tab", () => {
