@@ -206,7 +206,7 @@ function SecondaryManualSection({ groups }: { groups: FieldManualGroup[] }) {
       <div className="secondary-manuals__groups">
         {secondaryGroups.map((group, index) => (
           <div className="secondary-manual-group" key={`${group.key}-${group.sourceTitle ?? group.title}-${index}`}>
-            <h3>{group.sourceTitle ?? group.title}</h3>
+            <h3>{group.key === "intro" ? group.title : (group.sourceTitle ?? group.title)}</h3>
             <div className="secondary-manuals__links">
               {group.pages.map((page) => (
                 <Link href={`/manual/${encodeURIComponent(page.slug)}`} key={page.id}>{page.title}</Link>
