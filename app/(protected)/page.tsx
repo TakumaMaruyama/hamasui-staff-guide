@@ -53,7 +53,6 @@ async function HomeContent() {
           <p className="eyebrow">{siteConfig.organization}</p>
           <h1 id="home-title">{siteConfig.concept}</h1>
           <p>{siteConfig.description}</p>
-          <span className="home-hero__label">指導・安全・運営の基準を、必要なときにすぐ確認できます。</span>
         </div>
       </section>
 

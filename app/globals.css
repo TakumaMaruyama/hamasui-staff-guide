@@ -284,16 +284,6 @@ video {
   line-height: 1.65;
 }
 
-.home-hero__label {
-  display: inline-block;
-  margin-top: 12px;
-  padding-top: 10px;
-  border-top: 1px solid rgba(255, 255, 255, 0.18);
-  color: #a9c9d6;
-  font-size: 0.72rem;
-  line-height: 1.5;
-}
-
 .home-content {
   margin-top: -18px;
   padding-bottom: 80px;
@@ -2040,13 +2030,6 @@ video {
     margin-top: 18px;
     font-size: 1.02rem;
     line-height: 1.9;
-  }
-
-  .home-hero__label {
-    margin-top: 22px;
-    padding-top: 18px;
-    font-size: 0.82rem;
-    line-height: 1.75;
   }
 
   .home-content {
