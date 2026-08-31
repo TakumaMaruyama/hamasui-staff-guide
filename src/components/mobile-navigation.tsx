@@ -4,11 +4,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const items = [
-  { href: "/", icon: "⌂", label: "ホーム", match: "home" },
-  { href: "/search", icon: "⌕", label: "検索", match: "search" },
-  { href: "/coaching", icon: "泳", label: "指導", match: "coaching" },
-  { href: "/emergency", icon: "!", label: "安全", match: "emergency" },
-  { href: "/manuals", icon: "≡", label: "一覧", match: "manuals" },
+  { href: "/", label: "ホーム", match: "home" },
+  { href: "/coaching", label: "指導", match: "coaching" },
+  { href: "/search", label: "検索", match: "search" },
+  { href: "/emergency", label: "安全", match: "emergency" },
+  { href: "/manuals", label: "一覧", match: "manuals" },
 ] as const;
 
 export function MobileNavigation() {
@@ -36,8 +36,7 @@ function NavigationItems({ pathname }: { pathname: string }) {
             key={item.href}
             aria-current={isCurrent ? "page" : undefined}
           >
-            <span aria-hidden="true">{item.icon}</span>
-            <small>{item.label}</small>
+            <span>{item.label}</span>
           </Link>
         );
       })}

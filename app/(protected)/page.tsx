@@ -8,6 +8,7 @@ import { SearchForm } from "@/src/components/search-form";
 import { SyncButton } from "@/src/components/sync-button";
 import { iconForCategory, siteConfig } from "@/src/config/site";
 import {
+  coachingCourses,
   fieldManualGroups,
   type FieldManualGroup,
   type FieldManualGroupKey,
@@ -36,6 +37,7 @@ async function HomeContent() {
 
   const { snapshot, source, warning } = result.data;
   const groups = fieldManualGroups(snapshot);
+  const { courses } = coachingCourses(snapshot);
   const updates = recentPages(snapshot);
   const root = snapshot.pages.find((page) => page.id === snapshot.rootPageId);
   const pageSummaries = snapshot.pages
@@ -52,30 +54,55 @@ async function HomeContent() {
         <div className="home-hero__inner">
           <p className="eyebrow">{siteConfig.organization}</p>
           <h1 id="home-title">{siteConfig.concept}</h1>
-          <p>{siteConfig.description}</p>
         </div>
       </section>
 
       <div className="page-container home-content">
+        <section className="home-coaching-panel" aria-labelledby="home-coaching-title">
+          <div className="section-heading">
+            <div>
+              <p className="eyebrow">コースから選ぶ</p>
+              <h2 id="home-coaching-title">指導を探す</h2>
+            </div>
+            <Link href="/coaching">選び方を見る</Link>
+          </div>
+
+          <div className="home-course-grid">
+            {courses.map((course) => (
+              <Link
+                href={{ pathname: "/coaching", query: { course: course.key } }}
+                key={course.key}
+              >
+                <strong>{course.title}</strong>
+                <small>{course.pages.length > 0 ? `${course.pages.length}種目` : "種目を確認"}</small>
+              </Link>
+            ))}
+          </div>
+        </section>
+
+        <Link className="safety-quick-link" href="/emergency">
+          <span className="safety-quick-link__icon" aria-hidden="true">!</span>
+          <span>
+            <strong>安全・緊急対応</strong>
+            <small>事故や急変時の対応を確認する</small>
+          </span>
+          <span aria-hidden="true">→</span>
+        </Link>
+
+        <div className="home-search"><SearchForm /></div>
+
+        <ManualPreferenceLists pages={pageSummaries} />
+
         <section className="field-command-panel" aria-labelledby="field-command-title">
           <div className="section-heading">
             <div>
               <p className="eyebrow">業務場面から選ぶ</p>
-              <h2 id="field-command-title">今やること</h2>
+              <h2 id="field-command-title">指導以外の業務</h2>
             </div>
           </div>
 
-          <Link className="safety-quick-link" href="/emergency">
-            <span className="safety-quick-link__icon" aria-hidden="true">!</span>
-            <span>
-              <strong>安全・緊急対応</strong>
-              <small>事故や急変時の対応を確認する</small>
-            </span>
-            <span aria-hidden="true">→</span>
-          </Link>
-
           <div className="field-action-grid">
-            {PRIMARY_FIELD_LINKS.map((item) => {
+            {OPERATION_FIELD_LINKS.map((item) => {
               const group = groups.find((candidate) => candidate.key === item.key);
               return (
                 <Link className="field-action-card" href={item.href} key={item.key}>
@@ -93,11 +120,7 @@ async function HomeContent() {
           </div>
         </section>
 
-        <div className="home-search"><SearchForm /></div>
-
-        <ManualPreferenceLists pages={pageSummaries} />
-
-        {PRIMARY_FIELD_LINKS.filter((item) => item.key !== "coaching").map((item) => (
+        {OPERATION_FIELD_LINKS.map((item) => (
           <FieldManualSection
             group={groups.find((candidate) => candidate.key === item.key)}
             id={`field-${item.key}`}
@@ -156,13 +179,12 @@ async function HomeContent() {
   );
 }
 
-const PRIMARY_FIELD_LINKS: Array<{
-  key: Extract<FieldManualGroupKey, "before" | "coaching" | "after" | "guardian">;
+const OPERATION_FIELD_LINKS: Array<{
+  key: Extract<FieldManualGroupKey, "before" | "after" | "guardian">;
   label: string;
   href: string;
 }> = [
   { key: "before", label: "指導前", href: "#field-before" },
-  { key: "coaching", label: "水泳指導", href: "/coaching" },
   { key: "after", label: "指導後", href: "#field-after" },
   { key: "guardian", label: "保護者対応", href: "#field-guardian" },
 ];

@@ -20,7 +20,7 @@
   --warning-soft: #fff4ee;
   --warning-line: #efb39f;
   --focus: #f2a900;
-  --shadow: 0 16px 45px rgba(7, 27, 46, 0.1);
+  --shadow: 0 10px 28px rgba(7, 27, 46, 0.08);
   --radius-lg: 20px;
   --radius-md: 14px;
   --content-width: 1080px;
@@ -211,30 +211,20 @@ video {
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-direction: column;
-  gap: 3px;
   min-height: 64px;
+  border-top: 3px solid transparent;
   color: var(--navy-800);
   text-decoration: none;
 }
 
 .mobile-nav a[aria-current="page"] {
+  border-top-color: var(--blue-700);
   background: var(--blue-50);
   color: var(--navy-950);
 }
 
 .mobile-nav a span {
-  display: grid;
-  width: 26px;
-  height: 24px;
-  place-items: center;
-  color: var(--blue-700);
-  font-size: 1.1rem;
-  font-weight: 900;
-}
-
-.mobile-nav a small {
-  font-size: 0.65rem;
+  font-size: 0.72rem;
   font-weight: 800;
 }
 
@@ -261,7 +251,7 @@ video {
 .home-hero__inner {
   width: min(100%, var(--content-width));
   margin: 0 auto;
-  padding: 28px 18px 42px;
+  padding: 20px 18px 34px;
 }
 
 .home-hero .eyebrow {
@@ -271,7 +261,7 @@ video {
 .home-hero h1 {
   max-width: 760px;
   margin: 0;
-  font-size: clamp(1.75rem, 7.3vw, 2.35rem);
+  font-size: clamp(1.6rem, 6.8vw, 2.2rem);
   letter-spacing: -0.04em;
   line-height: 1.23;
 }
@@ -285,8 +275,55 @@ video {
 }
 
 .home-content {
-  margin-top: -18px;
+  margin-top: -14px;
   padding-bottom: 80px;
+}
+
+.home-coaching-panel {
+  padding: 18px;
+  border-radius: var(--radius-lg);
+  background: white;
+  box-shadow: var(--shadow);
+}
+
+.home-coaching-panel .section-heading {
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.home-course-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.home-course-grid a {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  flex-direction: column;
+  min-height: 76px;
+  padding: 12px 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  background: var(--blue-50);
+  color: var(--navy-900);
+  text-decoration: none;
+}
+
+.home-course-grid strong,
+.home-course-grid small {
+  display: block;
+}
+
+.home-course-grid strong {
+  font-size: 1rem;
+}
+
+.home-course-grid small {
+  margin-top: 5px;
+  color: var(--muted);
+  font-size: 0.7rem;
 }
 
 .search-form {
@@ -349,7 +386,7 @@ video {
   gap: 13px;
   align-items: center;
   min-height: 92px;
-  margin-top: 18px;
+  margin-top: 12px;
   padding: 17px;
   border: 1px solid var(--warning-line);
   border-radius: 16px;
@@ -652,6 +689,10 @@ video {
 
 .manual-tree {
   margin-top: 26px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: white;
 }
 
 .manual-tree__item {
@@ -726,17 +767,23 @@ video {
 
 .search-results > ol {
   display: grid;
-  gap: 12px;
+  gap: 0;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: white;
 }
 
 .search-results li a {
   display: block;
   min-height: 120px;
   padding: 20px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-md);
-  background: white;
+  border-bottom: 1px solid var(--line);
   text-decoration: none;
+}
+
+.search-results li:last-child a {
+  border-bottom: 0;
 }
 
 .search-results li a:hover {
@@ -1465,11 +1512,12 @@ video {
 
 .field-command-panel {
   position: relative;
+  margin-top: 32px;
   padding: 17px;
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
   background: white;
-  box-shadow: var(--shadow);
+  box-shadow: none;
 }
 
 .field-command-panel .section-heading {
@@ -1478,17 +1526,6 @@ video {
 
 .field-command-panel .section-heading h2 {
   font-size: 1.45rem;
-}
-
-.field-command-panel .safety-quick-link {
-  min-height: 74px;
-  margin-top: 10px;
-  padding: 12px;
-}
-
-.field-command-panel .safety-quick-link__icon {
-  width: 40px;
-  height: 40px;
 }
 
 .field-action-grid {
@@ -1704,6 +1741,9 @@ video {
 }
 
 .manual-quick-links {
+  position: sticky;
+  z-index: 30;
+  top: 76px;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
@@ -1713,6 +1753,7 @@ video {
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
   background: white;
+  box-shadow: 0 8px 20px rgba(7, 27, 46, 0.08);
 }
 
 .manual-quick-links a,
@@ -1733,6 +1774,29 @@ video {
 
 .manual-quick-links > span[aria-disabled="true"] {
   opacity: 0.55;
+}
+
+.manual-page--emergency .manual-page__header h1 {
+  color: #722916;
+}
+
+.manual-page--emergency .manual-quick-links {
+  border-color: var(--warning-line);
+  background: var(--warning-soft);
+}
+
+.manual-page--emergency .manual-quick-links a,
+.manual-page--emergency .manual-quick-links > span {
+  border-color: var(--warning-line);
+  background: white;
+  color: #722916;
+}
+
+.manual-footer-actions {
+  max-width: 820px;
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
 }
 
 .routine-checklist {
@@ -1826,10 +1890,6 @@ video {
   margin-top: 24px;
 }
 
-.coaching-overview {
-  margin-top: 28px;
-}
-
 .coaching-overview__images {
   display: grid;
   gap: 18px;
@@ -1846,22 +1906,68 @@ video {
 }
 
 .coaching-course-nav a {
-  display: grid;
-  min-height: 52px;
-  padding: 8px;
-  place-items: center;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  flex-direction: column;
+  min-height: 70px;
+  padding: 10px 12px;
   border: 1px solid var(--line-strong);
   border-radius: 12px;
   background: white;
   color: var(--navy-900);
-  font-weight: 900;
   text-decoration: none;
 }
 
-.coaching-grid {
-  display: grid;
-  gap: 18px;
-  margin-top: 22px;
+.coaching-course-nav a[aria-current="page"] {
+  border-color: var(--blue-700);
+  background: var(--blue-50);
+  box-shadow: inset 0 0 0 1px var(--blue-700);
+}
+
+.coaching-course-nav strong,
+.coaching-course-nav small {
+  display: block;
+}
+
+.coaching-course-nav strong {
+  font-size: 0.95rem;
+}
+
+.coaching-course-nav small {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 0.68rem;
+}
+
+.coaching-prompt {
+  margin-top: 18px;
+  padding: 28px 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: white;
+  text-align: center;
+}
+
+.coaching-prompt h2,
+.coaching-prompt p {
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.coaching-prompt h2 {
+  margin-top: 0;
+  margin-bottom: 8px;
+  color: var(--navy-900);
+  font-size: 1.35rem;
+}
+
+.coaching-prompt > p:last-child {
+  margin-top: 0;
+  margin-bottom: 0;
+  color: var(--muted);
+  font-size: 0.86rem;
+  line-height: 1.7;
 }
 
 .coaching-course {
@@ -1872,22 +1978,15 @@ video {
   background: white;
 }
 
-.coaching-course__header {
-  display: grid;
-  grid-template-columns: 42px 1fr auto;
-  gap: 11px;
-  align-items: center;
+.coaching-course--selected {
+  margin-top: 18px;
 }
 
-.coaching-course__header > span {
+.coaching-course__header {
   display: grid;
-  width: 42px;
-  height: 42px;
-  place-items: center;
-  border-radius: 12px;
-  background: var(--blue-100);
-  color: var(--blue-700);
-  font-weight: 900;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 11px;
+  align-items: center;
 }
 
 .coaching-course__header p,
@@ -1923,6 +2022,48 @@ video {
   margin-top: 16px;
 }
 
+.coaching-course__poster,
+.coaching-reference {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--blue-50);
+}
+
+.coaching-course__poster summary,
+.coaching-reference summary {
+  display: flex;
+  align-items: center;
+  min-height: 50px;
+  padding: 0 14px;
+  color: var(--navy-900);
+  font-size: 0.82rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.coaching-course__poster .manual-image {
+  margin: 0 12px 12px;
+}
+
+.coaching-step-heading {
+  margin-top: 24px;
+}
+
+.coaching-step-heading h3 {
+  margin: 0;
+  color: var(--navy-900);
+  font-size: 1.15rem;
+}
+
+.coaching-reference {
+  margin-top: 26px;
+  background: white;
+}
+
+.coaching-overview__images {
+  padding: 0 12px 12px;
+}
+
 .coaching-skill-grid {
   display: grid;
   gap: 8px;
@@ -1934,9 +2075,13 @@ video {
 }
 
 @media (min-width: 680px) {
-  .field-action-grid,
+  .home-course-grid,
   .coaching-course-nav {
     grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .field-action-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .field-page-grid,
@@ -1944,8 +2089,7 @@ video {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .manual-preference-lists,
-  .coaching-grid {
+  .manual-preference-lists {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -2018,12 +2162,12 @@ video {
   }
 
   .home-hero__inner {
-    padding-top: 72px;
-    padding-bottom: 132px;
+    padding-top: 38px;
+    padding-bottom: 82px;
   }
 
   .home-hero h1 {
-    font-size: clamp(2rem, 5vw, 3.8rem);
+    font-size: clamp(2rem, 4vw, 3.1rem);
   }
 
   .home-hero__inner > p:not(.eyebrow) {
@@ -2033,7 +2177,11 @@ video {
   }
 
   .home-content {
-    margin-top: -76px;
+    margin-top: -44px;
+  }
+
+  .home-coaching-panel {
+    padding: 24px;
   }
 
   .field-command-panel {
@@ -2076,6 +2224,11 @@ video {
 
   .manual-layout {
     grid-template-columns: minmax(0, 820px) 220px;
+  }
+
+  .manual-quick-links {
+    position: static;
+    box-shadow: none;
   }
 
   .desktop-toc {

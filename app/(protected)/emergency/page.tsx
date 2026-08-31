@@ -19,6 +19,7 @@ export default async function EmergencyPage() {
       {source === "stale" || warning === "stale-fallback" ? <StaleWarning syncedAt={snapshot.syncedAt} /> : null}
       <ManualArticle
         page={page}
+        tone="emergency"
         quickLinks={links.map((link) => ({
           label: link.label,
           ...(link.href !== "#" ? { href: link.href } : {}),

@@ -102,19 +102,34 @@ function descendants(snapshot: ManualSnapshot, page: ManualPage): ManualPage[] {
   return result;
 }
 
-const COURSE_NAMES = ["初級", "中級", "上級", "チャレンジ"] as const;
+export const COACHING_COURSE_DEFINITIONS = [
+  { key: "beginner", title: "初級" },
+  { key: "intermediate", title: "中級" },
+  { key: "advanced", title: "上級" },
+  { key: "challenge", title: "チャレンジ" },
+] as const;
+
+export type CoachingCourseKey = (typeof COACHING_COURSE_DEFINITIONS)[number]["key"];
+export type CoachingCourseTitle = (typeof COACHING_COURSE_DEFINITIONS)[number]["title"];
+
 export type CoachingCourse = {
-  title: (typeof COURSE_NAMES)[number];
+  key: CoachingCourseKey;
+  title: CoachingCourseTitle;
   page?: ManualPage;
   pages: ManualPage[];
 };
 
+export function coachingCourseKeyFromParam(value: string | string[] | undefined): CoachingCourseKey | undefined {
+  const candidate = Array.isArray(value) ? value[0] : value;
+  return COACHING_COURSE_DEFINITIONS.find((course) => course.key === candidate)?.key;
+}
+
 export function coachingCourses(snapshot: ManualSnapshot): { courses: CoachingCourse[]; hints: ManualPage[] } {
   const group = fieldManualGroups(snapshot).find((item) => item.key === "coaching");
   const pages = group?.pages ?? [];
-  const courses = COURSE_NAMES.map((title) => {
+  const courses = COACHING_COURSE_DEFINITIONS.map(({ key, title }) => {
     const page = pages.find((item) => item.title.trim() === title || item.title.trim().startsWith(`${title}コース`));
-    return { title, page, pages: page ? descendants(snapshot, page) : [] };
+    return { key, title, page, pages: page ? descendants(snapshot, page) : [] };
   });
   const courseIds = new Set(courses.flatMap((course) => [course.page?.id, ...course.pages.map((page) => page.id)].filter(Boolean)));
   return { courses, hints: pages.filter((page) => !courseIds.has(page.id)) };

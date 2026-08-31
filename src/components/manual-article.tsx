@@ -15,14 +15,15 @@ type ManualArticleProps = {
   previous?: ManualPage;
   next?: ManualPage;
   quickLinks?: Array<{ label: string; href?: string }>;
+  tone?: "standard" | "emergency";
 };
 
-export function ManualArticle({ page, previous, next, quickLinks }: ManualArticleProps) {
+export function ManualArticle({ page, previous, next, quickLinks, tone = "standard" }: ManualArticleProps) {
   const updatedAt = formatDate(page.lastEditedTime, true);
   const pageSummary = { id: page.id, title: page.title, slug: page.slug };
   const sectionLinks = quickLinks ?? coachingSectionLinks(page);
   return (
-    <div className="manual-page">
+    <div className={`manual-page manual-page--${tone}`}>
       <ManualRecentTracker page={pageSummary} />
       <nav className="breadcrumbs" aria-label="パンくずリスト">
         <ol>
@@ -44,7 +45,6 @@ export function ManualArticle({ page, previous, next, quickLinks }: ManualArticl
           {updatedAt ? <span>最終更新: {updatedAt}</span> : <span>更新日は取得できません</span>}
           <div className="manual-page__actions">
             <ManualFavoriteButton page={pageSummary} />
-            <SyncButton />
           </div>
         </div>
       </header>
@@ -98,6 +98,10 @@ export function ManualArticle({ page, previous, next, quickLinks }: ManualArticl
           ) : null}
         </nav>
       ) : null}
+
+      <div className="manual-footer-actions">
+        <SyncButton />
+      </div>
 
       <a className="back-to-top" href="#top">ページ上部へ戻る</a>
     </div>

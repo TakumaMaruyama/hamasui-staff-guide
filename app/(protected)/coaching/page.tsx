@@ -2,7 +2,11 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { ImageLightbox } from "@/src/components/image-lightbox";
 import { ManualUnavailable, StaleWarning } from "@/src/components/manual-state";
-import { coachingCourses } from "@/src/lib/manuals/field-navigation";
+import {
+  coachingCourseKeyFromParam,
+  coachingCourses,
+  type CoachingCourse,
+} from "@/src/lib/manuals/field-navigation";
 import { loadManualSnapshot } from "@/src/lib/manuals/server";
 
 export const dynamic = "force-dynamic";
@@ -56,7 +60,11 @@ const COURSE_POSTERS = {
   },
 } as const;
 
-export default async function CoachingPage() {
+type CoachingPageProps = {
+  searchParams: Promise<{ course?: string | string[] }>;
+};
+
+export default async function CoachingPage({ searchParams }: CoachingPageProps) {
   const result = await loadManualSnapshot();
   if (!result.ok) {
     return (
@@ -68,6 +76,9 @@ export default async function CoachingPage() {
 
   const { snapshot, source, warning } = result.data;
   const { courses, hints } = coachingCourses(snapshot);
+  const params = await searchParams;
+  const selectedKey = coachingCourseKeyFromParam(params.course);
+  const selectedCourse = courses.find((course) => course.key === selectedKey);
 
   return (
     <>
@@ -78,74 +89,42 @@ export default async function CoachingPage() {
         <header className="standard-page__header">
           <p className="eyebrow">水泳指導</p>
           <h1>指導を探す</h1>
-          <p>コースから選び、目的の種目をすぐ確認できます。</p>
+          <p>{selectedCourse
+            ? `${selectedCourse.title}コースの種目から、確認したい指導を選んでください。`
+            : "担当するコースを選ぶと、必要な種目だけを確認できます。"}</p>
         </header>
 
-        <section className="coaching-overview" aria-labelledby="coaching-overview-title">
-          <div className="section-heading">
-            <div>
-              <p className="eyebrow">まず確認</p>
-              <h2 id="coaching-overview-title">指導の全体像</h2>
-            </div>
-          </div>
+        <nav className="coaching-course-nav" aria-label="コースを選ぶ">
+          {courses.map((course) => (
+            <Link
+              href={{ pathname: "/coaching", query: { course: course.key } }}
+              key={course.key}
+              aria-current={course.key === selectedCourse?.key ? "page" : undefined}
+            >
+              <strong>{course.title}</strong>
+              <small>{course.pages.length > 0 ? `${course.pages.length}種目` : "種目を確認"}</small>
+            </Link>
+          ))}
+        </nav>
+
+        {selectedCourse ? (
+          <SelectedCourse course={selectedCourse} />
+        ) : (
+          <section className="coaching-prompt" aria-labelledby="coaching-prompt-title">
+            <p className="eyebrow">STEP 1</p>
+            <h2 id="coaching-prompt-title">担当コースを選んでください</h2>
+            <p>選択すると、そのコースの種目だけを表示します。</p>
+          </section>
+        )}
+
+        <details className="coaching-reference">
+          <summary>指導の全体像を見る</summary>
           <div className="coaching-overview__images">
             {OVERVIEW_IMAGES.map((image) => (
               <ImageLightbox key={image.src} {...image} />
             ))}
           </div>
-        </section>
-
-        <nav className="coaching-course-nav" aria-label="コースを選ぶ">
-          {courses.map((course, index) => (
-            <a href={`#course-${index}`} key={course.title}>
-              {course.title}
-            </a>
-          ))}
-        </nav>
-
-        <div className="coaching-grid">
-          {courses.map((course, index) => (
-            <section
-              className="coaching-course"
-              id={`course-${index}`}
-              key={course.title}
-              aria-labelledby={`course-${index}-title`}
-            >
-              <header className="coaching-course__header">
-                <span aria-hidden="true">{course.title.slice(0, 1)}</span>
-                <div>
-                  <p>コース</p>
-                  <h2 id={`course-${index}-title`}>{course.title}</h2>
-                </div>
-                {course.page ? (
-                  <Link href={`/manual/${encodeURIComponent(course.page.slug)}`}>
-                    概要
-                  </Link>
-                ) : null}
-              </header>
-
-              <div className="coaching-course__poster">
-                <ImageLightbox {...COURSE_POSTERS[course.title]} />
-              </div>
-
-              {course.pages.length > 0 ? (
-                <div className="coaching-skill-grid">
-                  {course.pages.map((page) => (
-                    <Link
-                      href={`/manual/${encodeURIComponent(page.slug)}`}
-                      key={page.id}
-                    >
-                      <strong>{page.title}</strong>
-                      <span aria-hidden="true">→</span>
-                    </Link>
-                  ))}
-                </div>
-              ) : (
-                <p className="empty-state">該当するマニュアルはありません。</p>
-              )}
-            </section>
-          ))}
-        </div>
+        </details>
 
         <section className="home-section coaching-hints" aria-labelledby="coaching-hints-title">
           <div className="section-heading">
@@ -172,5 +151,52 @@ export default async function CoachingPage() {
         </section>
       </div>
     </>
+  );
+}
+
+function SelectedCourse({ course }: { course: CoachingCourse }) {
+  return (
+    <section
+      className="coaching-course coaching-course--selected"
+      aria-labelledby="selected-course-title"
+    >
+      <header className="coaching-course__header">
+        <div>
+          <p>選択中のコース</p>
+          <h2 id="selected-course-title">{course.title}</h2>
+        </div>
+        {course.page ? (
+          <Link href={`/manual/${encodeURIComponent(course.page.slug)}`}>
+            コース概要
+          </Link>
+        ) : null}
+      </header>
+
+      <div className="coaching-step-heading">
+        <p className="eyebrow">STEP 2</p>
+        <h3>確認する種目を選ぶ</h3>
+      </div>
+
+      {course.pages.length > 0 ? (
+        <div className="coaching-skill-grid">
+          {course.pages.map((page) => (
+            <Link
+              href={`/manual/${encodeURIComponent(page.slug)}`}
+              key={page.id}
+            >
+              <strong>{page.title}</strong>
+              <span aria-hidden="true">→</span>
+            </Link>
+          ))}
+        </div>
+      ) : (
+        <p className="empty-state">該当するマニュアルはありません。</p>
+      )}
+
+      <details className="coaching-course__poster">
+        <summary>{course.title}コースの目標資料を見る</summary>
+        <ImageLightbox {...COURSE_POSTERS[course.title]} />
+      </details>
+    </section>
   );
 }

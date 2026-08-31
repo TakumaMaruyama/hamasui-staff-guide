@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { coachingCourses, emergencyLinks, emergencyPage, fieldManualGroups } from "../src/lib/manuals/field-navigation";
+import {
+  coachingCourseKeyFromParam,
+  coachingCourses,
+  emergencyLinks,
+  emergencyPage,
+  fieldManualGroups,
+} from "../src/lib/manuals/field-navigation";
 import type { ManualPage, ManualSnapshot } from "../src/types/manual";
 
 const page = (id: string, title: string, parentId?: string): ManualPage => ({
@@ -40,6 +46,13 @@ describe("field navigation projections", () => {
     expect(result.courses.map((course) => course.title)).toEqual(["初級", "中級", "上級", "チャレンジ"]);
     expect(result.courses[0].pages.map((item) => item.title)).toEqual(["クロール"]);
     expect(result.hints.map((item) => item.title)).toEqual(["自由泳ぎ"]);
+  });
+
+  it("accepts only stable coaching course query keys", () => {
+    expect(coachingCourseKeyFromParam("beginner")).toBe("beginner");
+    expect(coachingCourseKeyFromParam(["advanced", "challenge"])).toBe("advanced");
+    expect(coachingCourseKeyFromParam("初級")).toBeUndefined();
+    expect(coachingCourseKeyFromParam("unknown")).toBeUndefined();
   });
 
   it("emergency page is exact and links to matching heading anchors", () => {

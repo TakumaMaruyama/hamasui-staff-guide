@@ -15,6 +15,7 @@ const page = (id: string, title: string, parentId?: string): ManualPage => ({
 
 const pages = [
   page("beginner", "初級", "root"),
+  page("face", "顔つけ", "beginner"),
   page("intermediate", "中級", "root"),
   page("advanced", "上級", "root"),
   page("challenge", "チャレンジ", "root"),
@@ -53,21 +54,45 @@ vi.mock("@/src/lib/manuals/server", () => ({
 }));
 
 describe("指導を探す画面", () => {
-  it("全体資料と各コース資料を対応順に表示する", async () => {
+  it("未選択では4コースの選択と全体資料だけを表示する", async () => {
     const { default: CoachingPage } = await import("../app/(protected)/coaching/page");
-    const html = renderToStaticMarkup(await CoachingPage());
+    const html = renderToStaticMarkup(await CoachingPage({ searchParams: Promise.resolve({}) }));
     const imageSources = Array.from(html.matchAll(/<img[^>]+src="([^"]+)"/g), (match) => match[1]);
 
     expect(imageSources).toEqual([
       "/images/coaching/coaching-philosophy.jpg",
       "/images/coaching/course-map.jpg",
-      "/images/coaching/beginner-course.jpg",
-      "/images/coaching/intermediate-course.jpg",
-      "/images/coaching/advanced-course.jpg",
-      "/images/coaching/challenge-course.jpg",
     ]);
-    expect(html).toContain("指導の全体像");
-    expect(html).toContain("初級コース");
-    expect(html).toContain("チャレンジコース");
+    expect(html).toContain("担当コースを選んでください");
+    expect(html).toContain("course=beginner");
+    expect(html).toContain("course=challenge");
+    expect(html).not.toContain("顔つけ");
+  });
+
+  it("選択したコースの種目と資料だけを表示する", async () => {
+    const { default: CoachingPage } = await import("../app/(protected)/coaching/page");
+    const html = renderToStaticMarkup(await CoachingPage({
+      searchParams: Promise.resolve({ course: "beginner" }),
+    }));
+    const imageSources = Array.from(html.matchAll(/<img[^>]+src="([^"]+)"/g), (match) => match[1]);
+
+    expect(imageSources).toEqual([
+      "/images/coaching/beginner-course.jpg",
+      "/images/coaching/coaching-philosophy.jpg",
+      "/images/coaching/course-map.jpg",
+    ]);
+    expect(html).toContain("初級コースの種目から");
+    expect(html).toContain("顔つけ");
+    expect(html).not.toContain("intermediate-course.jpg");
+  });
+
+  it("不正なコース指定は未選択として扱う", async () => {
+    const { default: CoachingPage } = await import("../app/(protected)/coaching/page");
+    const html = renderToStaticMarkup(await CoachingPage({
+      searchParams: Promise.resolve({ course: "unknown" }),
+    }));
+
+    expect(html).toContain("担当コースを選んでください");
+    expect(html).not.toContain("選択中のコース");
   });
 });
