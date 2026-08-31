@@ -67,6 +67,7 @@ describe("指導を探す画面", () => {
     expect(html).toContain("course=beginner");
     expect(html).toContain("course=challenge");
     expect(html).not.toContain("顔つけ");
+    expect(html.indexOf("指導の全体像を見る")).toBeLessThan(html.indexOf('aria-label="コースを選ぶ"'));
   });
 
   it("選択したコースの種目と資料だけを表示する", async () => {
@@ -77,13 +78,15 @@ describe("指導を探す画面", () => {
     const imageSources = Array.from(html.matchAll(/<img[^>]+src="([^"]+)"/g), (match) => match[1]);
 
     expect(imageSources).toEqual([
-      "/images/coaching/beginner-course.jpg",
       "/images/coaching/coaching-philosophy.jpg",
       "/images/coaching/course-map.jpg",
+      "/images/coaching/beginner-course.jpg",
     ]);
     expect(html).toContain("初級コースの種目から");
     expect(html).toContain("顔つけ");
     expect(html).not.toContain("intermediate-course.jpg");
+    expect(html.indexOf("coaching-course__poster")).toBeLessThan(html.indexOf("確認する種目を選ぶ"));
+    expect(html).not.toContain('<details class="coaching-course__poster">');
   });
 
   it("不正なコース指定は未選択として扱う", async () => {

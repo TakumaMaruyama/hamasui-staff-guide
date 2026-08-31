@@ -94,6 +94,15 @@ export default async function CoachingPage({ searchParams }: CoachingPageProps) 
             : "担当するコースを選ぶと、必要な種目だけを確認できます。"}</p>
         </header>
 
+        <details className="coaching-reference">
+          <summary>指導の全体像を見る</summary>
+          <div className="coaching-overview__images">
+            {OVERVIEW_IMAGES.map((image) => (
+              <ImageLightbox key={image.src} {...image} />
+            ))}
+          </div>
+        </details>
+
         <nav className="coaching-course-nav" aria-label="コースを選ぶ">
           {courses.map((course) => (
             <Link
@@ -116,15 +125,6 @@ export default async function CoachingPage({ searchParams }: CoachingPageProps) 
             <p>選択すると、そのコースの種目だけを表示します。</p>
           </section>
         )}
-
-        <details className="coaching-reference">
-          <summary>指導の全体像を見る</summary>
-          <div className="coaching-overview__images">
-            {OVERVIEW_IMAGES.map((image) => (
-              <ImageLightbox key={image.src} {...image} />
-            ))}
-          </div>
-        </details>
 
         <section className="home-section coaching-hints" aria-labelledby="coaching-hints-title">
           <div className="section-heading">
@@ -172,6 +172,10 @@ function SelectedCourse({ course }: { course: CoachingCourse }) {
         ) : null}
       </header>
 
+      <div className="coaching-course__poster">
+        <ImageLightbox {...COURSE_POSTERS[course.title]} />
+      </div>
+
       <div className="coaching-step-heading">
         <p className="eyebrow">STEP 2</p>
         <h3>確認する種目を選ぶ</h3>
@@ -193,10 +197,6 @@ function SelectedCourse({ course }: { course: CoachingCourse }) {
         <p className="empty-state">該当するマニュアルはありません。</p>
       )}
 
-      <details className="coaching-course__poster">
-        <summary>{course.title}コースの目標資料を見る</summary>
-        <ImageLightbox {...COURSE_POSTERS[course.title]} />
-      </details>
     </section>
   );
 }

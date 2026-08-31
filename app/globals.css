@@ -1741,9 +1741,6 @@ video {
 }
 
 .manual-quick-links {
-  position: sticky;
-  z-index: 30;
-  top: 76px;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
@@ -1753,7 +1750,6 @@ video {
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
   background: white;
-  box-shadow: 0 8px 20px rgba(7, 27, 46, 0.08);
 }
 
 .manual-quick-links a,
@@ -2020,16 +2016,12 @@ video {
 
 .coaching-course__poster {
   margin-top: 16px;
-}
-
-.coaching-course__poster,
-.coaching-reference {
+  padding: 12px;
   border: 1px solid var(--line);
   border-radius: 12px;
   background: var(--blue-50);
 }
 
-.coaching-course__poster summary,
 .coaching-reference summary {
   display: flex;
   align-items: center;
@@ -2042,7 +2034,7 @@ video {
 }
 
 .coaching-course__poster .manual-image {
-  margin: 0 12px 12px;
+  margin: 0;
 }
 
 .coaching-step-heading {
@@ -2056,7 +2048,9 @@ video {
 }
 
 .coaching-reference {
-  margin-top: 26px;
+  margin-top: 22px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
   background: white;
 }
 
@@ -2224,11 +2218,6 @@ video {
 
   .manual-layout {
     grid-template-columns: minmax(0, 820px) 220px;
-  }
-
-  .manual-quick-links {
-    position: static;
-    box-shadow: none;
   }
 
   .desktop-toc {
