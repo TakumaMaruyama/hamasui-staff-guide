@@ -63,7 +63,9 @@ describe("指導を探す画面", () => {
       "/images/coaching/coaching-philosophy.jpg",
       "/images/coaching/course-map.jpg",
     ]);
-    expect(html).toContain("担当コースを選んでください");
+    expect(html).toContain("担当するコースを選ぶと");
+    expect(html).not.toContain("coaching-prompt");
+    expect(html).toContain("指導のヒント");
     expect(html).toContain("course=beginner");
     expect(html).toContain("course=challenge");
     expect(html).not.toContain("顔つけ");
@@ -95,7 +97,7 @@ describe("指導を探す画面", () => {
       searchParams: Promise.resolve({ course: "unknown" }),
     }));
 
-    expect(html).toContain("担当コースを選んでください");
+    expect(html).toContain("担当するコースを選ぶと");
     expect(html).not.toContain("選択中のコース");
   });
 });

@@ -1078,6 +1078,10 @@ video {
   font-size: 1.12rem;
 }
 
+.manual-body > section:first-child > :is(h2, h3, h4):first-child {
+  margin-top: 0;
+}
+
 .manual-body ul,
 .manual-body ol {
   margin: 1em 0;
@@ -1741,8 +1745,8 @@ video {
 }
 
 .manual-quick-links {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   max-width: 820px;
   margin-top: 18px;
@@ -1755,6 +1759,8 @@ video {
 .manual-quick-links a,
 .manual-quick-links > span {
   display: grid;
+  flex: 1 1 130px;
+  min-width: 0;
   min-height: 52px;
   padding: 8px 10px;
   place-items: center;
@@ -1883,7 +1889,11 @@ video {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 8px;
-  margin-top: 24px;
+  margin-top: 16px;
+}
+
+.coaching-page .standard-page__header > p:not(.eyebrow) {
+  margin-top: 10px;
 }
 
 .coaching-overview__images {
@@ -1934,36 +1944,6 @@ video {
   margin-top: 4px;
   color: var(--muted);
   font-size: 0.68rem;
-}
-
-.coaching-prompt {
-  margin-top: 18px;
-  padding: 28px 20px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
-  background: white;
-  text-align: center;
-}
-
-.coaching-prompt h2,
-.coaching-prompt p {
-  margin-right: auto;
-  margin-left: auto;
-}
-
-.coaching-prompt h2 {
-  margin-top: 0;
-  margin-bottom: 8px;
-  color: var(--navy-900);
-  font-size: 1.35rem;
-}
-
-.coaching-prompt > p:last-child {
-  margin-top: 0;
-  margin-bottom: 0;
-  color: var(--muted);
-  font-size: 0.86rem;
-  line-height: 1.7;
 }
 
 .coaching-course {
@@ -2048,7 +2028,7 @@ video {
 }
 
 .coaching-reference {
-  margin-top: 22px;
+  margin-top: 16px;
   border: 1px solid var(--line);
   border-radius: 12px;
   background: white;
@@ -2087,8 +2067,8 @@ video {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .manual-quick-links {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+  .manual-preference-list:only-child {
+    grid-column: 1 / -1;
   }
 
   .category-grid {

@@ -116,15 +116,7 @@ export default async function CoachingPage({ searchParams }: CoachingPageProps) 
           ))}
         </nav>
 
-        {selectedCourse ? (
-          <SelectedCourse course={selectedCourse} />
-        ) : (
-          <section className="coaching-prompt" aria-labelledby="coaching-prompt-title">
-            <p className="eyebrow">STEP 1</p>
-            <h2 id="coaching-prompt-title">担当コースを選んでください</h2>
-            <p>選択すると、そのコースの種目だけを表示します。</p>
-          </section>
-        )}
+        {selectedCourse ? <SelectedCourse course={selectedCourse} /> : null}
 
         <section className="home-section coaching-hints" aria-labelledby="coaching-hints-title">
           <div className="section-heading">
